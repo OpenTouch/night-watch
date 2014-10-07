@@ -1,0 +1,42 @@
+---
+
+# This is an example of task using HttpRequest Provider.
+# This task checks every 60 seconds ("period" parameter) if the web site www.google.com ("url" provider option) is available 
+# (it expects the HTTP status code returned (provider option "requested_data") to be equals ("condition" parameter) to 200 ("threshold" parameter).
+#
+# If the site is unavailable, it retries an HTTP request 3 more times ("retries" parameter) with a 60s interval ("period" parameter) before processing 
+# the configured action(s).
+# If the task fails (HTTP status code different than 200) 3 times successively, an email (set in "actions_failed" parameter) is sent.
+# If the task is back to success (HTTP status code equal to 200) while it was failed, an email (set in "actions_success" parameter) is sent.
+#
+# Note that some Email Action's options are defined in actions.d/Email.yml file (mostly server options which should be common for all tasks).
+#   - These options are used by Email Action without the need to redefine them in the task. 
+#   - These options can be overloaded in the task configuration. If so, the value set in the task will apply instead of the one set in the Email.yml file.
+            
+Check www.google.com availability:
+    period: 60s
+    retries: 3
+    providers: 
+        - HttpRequest:
+            provider_options:
+                url: https://www.google.com
+                method: GET
+                requested_data: status
+            condition: equals
+            threshold: 200
+    actions_failed:
+        Email:
+            email_to_addrs:
+                - admin@example.com
+            email_cc_addrs: 
+            email_subject: "Google.com is no longer available"
+            services_monitored: "https://www.google.com"
+    actions_success:
+        Email:
+            email_to_addrs:
+                - admin@example.com
+            email_cc_addrs: 
+            email_subject: "Google.com is available again"
+            services_monitored: "https://www.google.com"
+
+...

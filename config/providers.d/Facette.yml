@@ -1,0 +1,14 @@
+---
+
+# This is an example of generic configuration file for Facette provider. 
+# /!\ Warning: the file must have the name than the Provider for which it defines the configuration (Facette for this file).
+#
+# Note that each of these settings can be overloaded in the tasks which uses Facette provider)
+#
+# This example uses the demo facette server (no user/password is required for demo facette server)
+
+facette_srv_url: http://demo.facette.io/
+facette_srv_user:
+facette_srv_pwd: 
+
+...

@@ -1,0 +1,79 @@
+---
+
+# This is an example of Nigth Watch Daemon main configuration file.
+
+# Define the paths were are located the tasks, providers and actions config files (mandatory parameters)
+config:
+    tasks_location: /etc/night-watch/tasks.d
+    providers_location: /etc/night-watch/providers.d
+    actions_location: /etc/night-watch/actions.d
+
+# Define the logging rules (mandatory parameters)
+# Note: the logging section must be a dictionary parsable by the logging.dictConfig() function
+#       (see https://docs.python.org/2/library/logging.config.html#logging-config-dict-connections)
+# In this example:
+#   - all the logs regarding the night watch daemon are logged in DEBUG level in the console and in log files according to the log level
+#   - logs from other modules are logged in ERROR level in the console and in error log file
+logging:
+    version: 1
+
+    disable_existing_loggers: False
+    
+    formatters:
+        simple:
+            format: "%(asctime)s - %(name)s - %(levelname)s - [%(threadName)s] - %(module)s: %(message)s"
+    
+    handlers:
+        console:
+            class: logging.StreamHandler
+            level: DEBUG
+            formatter: simple
+            stream: ext://sys.stdout
+    
+        debug_file_handler:
+            class: logging.handlers.RotatingFileHandler
+            level: DEBUG
+            formatter: simple
+            filename: /var/log/night-watch/debug.log
+            maxBytes: 1048576 # 1Mo
+            backupCount: 5
+            encoding: utf8
+    
+        info_file_handler:
+            class: logging.handlers.RotatingFileHandler
+            level: INFO
+            formatter: simple
+            filename: /var/log/night-watch/info.log
+            maxBytes: 1048576 # 1Mo
+            backupCount: 5
+            encoding: utf8
+    
+        warning_file_handler:
+            class: logging.handlers.RotatingFileHandler
+            level: WARNING
+            formatter: simple
+            filename: /var/log/night-watch/warning.log
+            maxBytes: 1048576 # 1Mo
+            backupCount: 3
+            encoding: utf8
+    
+        error_file_handler:
+            class: logging.handlers.RotatingFileHandler
+            level: ERROR
+            formatter: simple
+            filename: /var/log/night-watch/error.log
+            maxBytes: 1048576 # 1Mo
+            backupCount: 3
+            encoding: utf8
+    
+    loggers:
+        nw:
+            level: DEBUG
+            handlers: [console, debug_file_handler, info_file_handler, warning_file_handler, error_file_handler]
+            propagate: no
+    
+    root:
+        level: ERROR
+        handlers: [console, error_file_handler]
+
+...

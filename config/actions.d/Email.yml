@@ -1,0 +1,21 @@
+---
+
+# This is an example of generic configuration file for Email action. 
+# /!\ Warning: the file must have the name than the Action for which it defines the configuration (Email for this file).
+#
+# Note that each of these settings can be overloaded in the tasks which uses Email action)
+#
+# This example uses localhost, expecting that a smtp server is installed and configured on the server on which Night Watch Daemon is running.
+
+smtp_srv_url: localhost
+smtp_srv_port: 
+smtp_srv_login: 
+smtp_srv_password:
+smtp_srv_tls: True
+email_from_addr: admin@example.com
+email_header: you receive this mail because an event is produced in your cloud environnment.
+email_content_success: The next service is back to normal
+email_content_failed: The next service is failed
+email_signature: The Night Watch Daemon
+
+...

@@ -1,0 +1,29 @@
+#!/bin/sh -e
+
+if [ "$1" = "configure" ]; then
+    
+    USER=night-watch
+    GROUP=night-watch
+    
+    adduser --system $USER
+    addgroup $GROUP
+    adduser $USER $GROUP
+
+    pip install apscheduler
+    pip install pyyaml
+    pip install requests
+
+    mkdir -p /var/log/night-watch
+    chown -R night-watch:night-watch /var/log/night-watch
+    chmod 0750 /var/log/night-watch
+
+    mkdir -p /etc/night-watch
+    chown -R night-watch:night-watch /etc/night-watch
+    chmod 0750 /etc/night-watch
+
+    # Fix permissions on the init.d scripts.
+    chmod 755 /etc/init.d/nwd
+    update-rc.d nwd defaults
+fi
+
+#DEBHELPER#

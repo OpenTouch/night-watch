@@ -1,0 +1,2 @@
+config/*		etc/night-watch
+debian/nwd		etc/init.d

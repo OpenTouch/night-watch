@@ -1,0 +1,16 @@
+Source: night-watch
+Section: python
+Priority: optional
+Maintainer: Alcatel-Lucent Personal Cloud R&D <dev@opentouch.net>
+Uploaders: Alcatel-Lucent Personal Cloud R&D <dev@opentouch.net>
+Build-Depends: debhelper (>= 9), python-all (>= 2.6.6-3~), python-setuptools
+Standards-Version: 3.9.4
+X-Python-Version: >= 2.7
+Homepage: https://github.com/OpenTouch/night-watch
+
+Package: night-watch
+Architecture: all
+Depends: ${misc:Depends}, ${python:Depends}, python-pip, python-facette
+Description: Night Watch Daemon
+ NightWatch (a.k.a. Night Watch Daemon, or nwd) is a small server-side software that checks for systems inconsistencies and triggers alarms in the unfortunate event of something bad happening.
+ 

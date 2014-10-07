@@ -1,0 +1,49 @@
+---
+
+# This is an example of task using Facette Provider.
+# Note that some Facette Provider's options are defined in providers.d/Facette.example.yml file ("facette_srv_url", "facette_srv_user", "facette_srv_pwd" options):
+#   - These options are used by Facette Provider without the need to redefine them in the task. 
+#   - These options can be overloaded in the task configuration. If so, the value set in the task will apply instead of the one set in the Facette.yml file.
+# 
+# This task checks every 60 seconds ("period" parameter) if the metric "load.midterm" ("metric_name" provider option) for server "host1.example.net" 
+# ("source_name" provider option) is lower ("condition" parameter) than 2.5 ("threshold" parameter). The metric is collected from the Facette graph
+# named "host1.example.net - load average" ("graph_name_filter" provider optional setting, if not provided the graph containing the requested metric
+# for the requested source is searched by looping on all Facette server's graphs). The value retrieved by Facette Provider is the avg ("plot_info" provider option)
+# for the last 300 seconds ("plot_range" provider option).
+#
+# If the load is greater than 2.5, it processes the configured action(s) (without retries, as "retries" parameter is not provided).
+# If the task fails (load.midterm greater than 2.5), an email (set in "actions_failed" parameter) is sent.
+# If the task is back to success (load.midterm lower than 2.5) while it was failed, an email (set in "actions_success" parameter) is sent.
+#
+# Note that some Email Action's options are defined in actions.d/Email.yml file (mostly server options which should be common for all tasks).
+#   - These options are used by Email Action without the need to redefine them in the task. 
+#   - These options can be overloaded in the task configuration. If so, the value set in the task will apply instead of the one set in the Email.yml file.
+
+Check load average on host1.example.net server (available on demo.facette.io server):
+    period: 60s
+    #retries: 0 # Not mandatory, as 0 is default value for retries
+    providers:
+        - Facette:
+            provider_options:
+                source_name: host1.example.net
+                metric_name: load.midterm
+                plot_range: 300s
+                plot_info: avg
+            condition: lower
+            threshold: 2.5
+    actions_failed:
+        Email:
+            email_to_addrs:
+                - admin@example.com
+            email_cc_addrs: 
+            email_subject: "Check load on host1.example.net failed"
+            services_monitored: "Load of host1.example.net is too high"
+    actions_success:
+        Email:
+            email_to_addrs:
+                - admin@example.com
+            email_cc_addrs: 
+            email_subject: "Check load on host1.example.net success"
+            services_monitored: "Load of host1.example.net is back to normal"
+
+...

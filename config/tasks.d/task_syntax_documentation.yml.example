@@ -1,0 +1,35 @@
+---
+
+# This is an example explaining the syntax to use for tasks' configuration in tasks files.
+# Notes:
+#   - a tasks file can define several tasks, 
+#   - the folder tasks.d can contain several tasks files, all the tasks from all the files will be loaded by the Night Watch Daemon,
+#   - the tasks should have a different name, otherwise the latest loaded erases the previous ones.
+#
+# Each task is define as follow (yaml format):
+# Task name:  # Task's name
+#     period: 60s  # Task's periodicity (the task will be processed every X seconds)
+#     retries: 3  # When the task condition fails, number of retries to process (every "period" seconds) before processing the "actions_failed" actions. Default value is 0 (no retry).
+#     providers:  # List of Providers to use in the task (at least 1 provider is required to be set). If several Providers are defined, the task will be considered as failed only if all the configured Providers condition fails.
+#         - Provider1:  # Name of the Provider to use.
+#             provider_options:  # List of options for provider 1 (note: available options depends of the Provider)
+#                 option1: provider1 option1
+#                 option2: provider1 option2
+#             condition: lower  # Expected condition for provider 1
+#             threshold: 0.9  # Expected threshold for provider 1
+#         - Provider2:  # Name of the Provider to use (note: it can be the same Provider than Provider1)
+#             provider_options:  # List of options for provider 2 (note: available options depends of the Provider)
+#                 option: provider2 option
+#             condition: equals  # Expected condition for provider 2
+#             threshold: 0  # Expected threshold for provider 2
+#     actions_failed:  # List of Actions to process when the task fails (only processed once the task failed as many times as specified in "retries" parameter).
+#         Action1:  # Name of the Action to use.
+#             option: action1 option  # List of options for Action1 (note: available options depends of the Action)
+#         Action2:  # Name of the Action to use.
+#             option1: action2 option1  # List of options for Action2 (note: available options depends of the Action)
+#             option2: action2 option2
+#     actions_success:  # List of Actions to process when the task is back to normal (processed once the task status changes from failed to success).
+#         Action1:  # Name of the Action to use.
+#             option: action1 option  # List of options for Action1 (note: available options depends of the Action)
+
+...
