@@ -32,7 +32,6 @@ config = {
           'facette_srv_url': 'http://demo.facette.io',
           'facette_srv_user': '',
           'facette_srv_pwd': '',
-          'graph_name': 'host1.example.net - load average',
           'source_name': 'host1.example.net',
           'metric_name': 'load.midterm',
          }

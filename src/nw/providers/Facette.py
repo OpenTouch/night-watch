@@ -74,7 +74,7 @@ class Facette(Provider):
         # Look for the plot serie containing the requested metric
         plot_serie = self._findPlotSerie(plot, self.serie_name)
         # Get the value from the requested metric and return it
-        value = plot_serie.info.info.get(self.plot_info)
+        value = plot_serie.summary.summary.get(self.plot_info)
         getLogger(__name__).debug('Value is ' + str(value) + ' for requested metric "' + self._config.get('metric_name') + '". Read from graph with id ' + self.graph_id + ', serie name "' + self.serie_name + '"')
         return value
     
