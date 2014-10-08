@@ -1,0 +1,15 @@
+#!/bin/sh
+
+set -e
+
+if [ "$1" = "purge" ]; then
+
+	update-rc.d -f nwd remove
+	rm -rf /etc/night-watch
+    rm -rf /var/log/night-watch
+
+fi
+
+#DEBHELPER#
+
+exit 0

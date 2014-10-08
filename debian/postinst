@@ -3,11 +3,8 @@
 if [ "$1" = "configure" ]; then
     
     USER=night-watch
-    GROUP=night-watch
     
-    adduser --system $USER
-    addgroup $GROUP
-    adduser $USER $GROUP
+    adduser --system --disabled-password --disabled-login --no-create-home --quiet --group $USER
 
     pip install apscheduler
     pip install pyyaml
