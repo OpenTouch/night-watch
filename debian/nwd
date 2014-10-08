@@ -23,6 +23,7 @@ PIDFILE=/var/run/$NAME.pid
 SCRIPTNAME=/etc/init.d/$NAME
 USER=night-watch
 
+# TODO: find a way to avoid doing a chmod 777 on /var/run/
 sudo chmod 777 /var/run/
 
 # Exit if the package is not installed
