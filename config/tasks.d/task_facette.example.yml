@@ -5,7 +5,7 @@
 #   - These options are used by Facette Provider without the need to redefine them in the task. 
 #   - These options can be overloaded in the task configuration. If so, the value set in the task will apply instead of the one set in the Facette.yml file.
 # 
-# This task checks every 60 seconds ("period" parameter) if the metric "load.midterm" ("metric_name" provider option) for server "host1.example.net" 
+# This task checks every 60 seconds ("period_success" parameter) if the metric "load.midterm" ("metric_name" provider option) for server "host1.example.net" 
 # ("source_name" provider option) is lower ("condition" parameter) than 2.5 ("threshold" parameter). The metric is collected from the Facette graph
 # named "host1.example.net - load average" ("graph_name_filter" provider optional setting, if not provided the graph containing the requested metric
 # for the requested source is searched by looping on all Facette server's graphs). The value retrieved by Facette Provider is the avg ("plot_info" provider option)
@@ -13,6 +13,7 @@
 #
 # If the load is greater than 2.5, it processes the configured action(s) (without retries, as "retries" parameter is not provided).
 # If the task fails (load.midterm greater than 2.5), an email (set in "actions_failed" parameter) is sent.
+# While the task is failed, it retries every 30s ("period_failed" parameter) to check if the task is back to success. If the task is back to success 
 # If the task is back to success (load.midterm lower than 2.5) while it was failed, an email (set in "actions_success" parameter) is sent.
 #
 # Note that some Email Action's options are defined in actions.d/Email.yml file (mostly server options which should be common for all tasks).
@@ -20,11 +21,14 @@
 #   - These options can be overloaded in the task configuration. If so, the value set in the task will apply instead of the one set in the Email.yml file.
 
 Check load average on host1.example.net server (available on demo.facette.io server):
-    period: 60s
+    period_success: 60s
+    #period_retry: 60s # Not mandatory, as no retries are defined
+    period_failed: 30s
     #retries: 0 # Not mandatory, as 0 is default value for retries
     providers:
         - Facette:
             provider_options:
+                #graph_name_filter: host1.example.net - load average # Doesn't work because the graph name contains special characters on demo.facette.io server
                 source_name: host1.example.net
                 metric_name: load.midterm
                 plot_range: 300s

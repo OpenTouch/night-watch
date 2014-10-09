@@ -8,8 +8,10 @@
 #
 # Each task is define as follow (yaml format):
 # Task name:  # Task's name
-#     period: 60s  # Task's periodicity (the task will be processed every X seconds)
-#     retries: 3  # When the task condition fails, number of retries to process (every "period" seconds) before processing the "actions_failed" actions. Default value is 0 (no retry).
+#     period_success: 60s  # Task's periodicity as long as the task condition is valid (the task will be processed every X seconds).
+#     period_retry: 10s  # If retries parameter is defined and greater than 0, this define the task's periodicity between each retry while the task condition is failed and there are still retries to perform before processing the "actions_failed" actions.
+#     period_failed: 30s  # Task's periodicity as long as the task condition is failed (the task will be processed every X seconds). Once the task is back to success, the task period will be set back to "period_success".
+#     retries: 3  # When the task condition fails, number of retries to process (every "period_retry" seconds) before processing the "actions_failed" actions. Default value is 0 (no retry).
 #     providers:  # List of Providers to use in the task (at least 1 provider is required to be set). If several Providers are defined, the task will be considered as failed only if all the configured Providers condition fails.
 #         - Provider1:  # Name of the Provider to use.
 #             provider_options:  # List of options for provider 1 (note: available options depends of the Provider)
