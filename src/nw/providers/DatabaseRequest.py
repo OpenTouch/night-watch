@@ -37,7 +37,7 @@ class DatabaseRequest(Provider):
         database_type = self._config.get('database_type')
         if (database_type == "postgresql"):
             getLogger(__name__).info(database_type + "is selected")
-            con = psycopg2.connect(host=self._config.get('machine_addr'), database=self._config.get('database_name'), user=self._config.get('user_database'), password=self._config.get('password_database'))
+            con = psycopg2.connect(host=str(self._config.get('machine_addr')), database=str(self._config.get('database_name')), user=str(self._config.get('user_database')), password=str(self._config.get('password_database')))
             cur = con.cursor(cursor_factory=psycopg2.extras.DictCursor)
             cur.execute(self._config.get('request'))
             result = cur.fetchone()
