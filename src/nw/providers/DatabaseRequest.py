@@ -36,7 +36,7 @@ class DatabaseRequest(Provider):
     def process(self):
         database_type = self._config.get('database_type')
         if (database_type == "postgresql"):
-            getLogger(__name__).info(database + "is selected")
+            getLogger(__name__).info(database_type + "is selected")
             con = psycopg2.connect(host=self._config.get('machine_addr'), database=self._config.get('database_name'), user=self._config.get('user_database'), password=self._config.get('password_database'))
             cur = con.cursor(cursor_factory=psycopg2.extras.DictCursor)
             cur.execute(self._config.get('request'))
@@ -49,7 +49,7 @@ class DatabaseRequest(Provider):
                 getLogger(__name__).info("The database request for " + self._config.get('database_name') + " is success.")
                 return "OK"
         elif (database_type == "mysql"):
-            getLogger(__name__).info(database + "is selected")
+            getLogger(__name__).info(database_type + "is selected")
         else: 
             getLogger(__name__).error(database_type + " is not a type of database known.")
 
