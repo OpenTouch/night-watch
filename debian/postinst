@@ -9,6 +9,7 @@ if [ "$1" = "configure" ]; then
     pip install apscheduler
     pip install pyyaml
     pip install requests
+    pip install psycopg2
 
     mkdir -p /var/log/night-watch
     chown -R night-watch:night-watch /var/log/night-watch
