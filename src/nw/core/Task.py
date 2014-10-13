@@ -18,6 +18,7 @@ import operator
 
 from nw.core import ProvidersManager
 from nw.core import ActionsManager
+import nw.core
 
 # List of supported conditions
 _operator_dict = {
@@ -33,12 +34,23 @@ _operator_dict = {
 
 class Task():
     
-    def __init__(self, name, period, retries, providers, actions_failed, actions_success):
+    def __init__(self, name, period_success, period_retry, period_failed, retries, providers, actions_failed, actions_success):
         self.name = name
         
-        if period is None:
-            raise ValueError('Mandatory parameter period is not provided to task "' + name + '"')
-        self.period = period
+        if period_success is None:
+            raise ValueError('Mandatory parameter period_success is not provided to task "' + name + '"')
+        self.period_success = period_success
+        
+        if period_retry is None:
+            raise ValueError('Mandatory parameter period_retry is not provided to task "' + name + '"')
+        self.period_retry = period_retry
+        
+        if period_failed is None:
+            raise ValueError('Mandatory parameter period_failed is not provided to task "' + name + '"')
+        self.period_failed = period_failed
+        
+        # Define the task period to period_success at init
+        self.period = period_success
         
         # Number of retries before performing the actions
         if retries is None:
@@ -112,6 +124,9 @@ class Task():
                     # Check if the value obtained from the provider is conform to the condition defined in the task config
                     if self.numberOfProvidersFailed == self.numberOfProviders:
                         if self._remaining_retries > 0:
+                            if self._remaining_retries == self.retries:
+                                # Update task period to period_retry in scheduler
+                                self._updateTaskPeriod(self.period_retry)
                             # The task failed, but we retry as many times as specified in task configuration (retries parameter) before performing the action(s)
                             getLogger(__name__).info('Task "' + self.name + '" failed, but retry again the task ' + str(self._remaining_retries) + ' times before performing the action(s)')
                             self._remaining_retries -= 1 # Condition is not conform, decrement the counter of remaining retries
@@ -121,6 +136,8 @@ class Task():
                         else:
                             # Task is not conform, execute the action(s)
                             self._task_failed = True
+                            # Update task period to period_failed in scheduler
+                            self._updateTaskPeriod(self.period_failed)
                             getLogger(__name__).warning('Task "' + self.name + '" just failed, process the actions_failed')
                             log_message = "when the task failed"
                             self._makeAction(self.actions_failed, log_message, False)
@@ -129,8 +146,12 @@ class Task():
                         if self._remaining_retries != self.retries:
                             getLogger(__name__).debug('Set back the remaining retries_counter (' + str(self._remaining_retries) + ') to the required retries number (' + str(self.retries) + ') for task "' + self.name + '".')
                             self._remaining_retries = self.retries
+                            # Update task period from period_retry to period_success in scheduler
+                            self._updateTaskPeriod(self.period_success)
                         elif self._task_failed:
                             self._task_failed = False
+                            # Update task period from period_failed to period_success in scheduler
+                            self._updateTaskPeriod(self.period_success)
                             getLogger(__name__).info('Task "' + self.name + '" is back to normal, process the actions_success')
                             log_message = "when the task is back to normal"
                             self._makeAction(self.actions_success, log_message, True)
@@ -160,3 +181,9 @@ class Task():
         else:
             self.numberOfProvidersFailed = self.numberOfProvidersFailed + 1
             getLogger(__name__).warning(log_msg)
+                    
+    def _updateTaskPeriod(self, new_period):
+        if new_period != self.period:
+            getLogger(__name__).info('Update task period from ' + self.period + ' to ' + new_period)
+            self.period = new_period
+            nw.core.TaskManager.getTaskManager().updateTaskPeriod(self)

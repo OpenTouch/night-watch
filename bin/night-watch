@@ -46,15 +46,19 @@ if __name__ == "__main__":
         else:
             getLogger(__name__).error("Provided argument config file does not exist or is not accessible, read config file from " + config_file)
     
-    # Read our config file
+    # Read the config file
     config = NwConfiguration.getNwConfiguration()
     config.read(config_file)
     
     # Reconfigure the logger now that the logging section from night-watch config file has been loaded
     Log.reconfigure(config.logging)
     
-    TaskManager.start()
+    # Start TaskManager
+    TaskManager.getTaskManager().start()
+    
     while not shutdown:
         time.sleep(1)
 
+    # Stop TaskManager before exiting
+    TaskManager.getTaskManager().stop()
     sys.exit(2)

@@ -1,0 +1,48 @@
+---
+
+# This is an example of task using Ping Provider.
+# This task checks every 60 seconds ("period_success" parameter) if the host localhost ("ping_addr" provider option) is available 
+# (it expects the exit status code returned by ping (provider option "requested_data") to be equals ("condition" parameter) to 0 ("threshold" parameter).
+# The ping options are to send 3 packets (provider option "count") and to wait a reply for each packet a maximum of 3 seconds (provider option "timeout"). 
+# This corresponds to the command "ping -c 3 -W 3 127.0.0.1"
+#
+# If the host is unavailable, it retries ping 5 more times ("retries" parameter) with a 10s interval ("period_retry" parameter) before processing 
+# the configured action(s).
+# If the task fails (ping exit status code different than 0) 5 times successively, an email (set in "actions_failed" parameter) is sent.
+# While the task is failed, it retries every 30s ("period_failed" parameter) to check if the host is avaiable again. If the task is back to success 
+# (ping exit status code equal to 0) while it was failed, an email (set in "actions_success" parameter) is sent.
+#
+# Note that some Email Action's options are defined in actions.d/Email.yml file (mostly server options which should be common for all tasks).
+#   - These options are used by Email Action without the need to redefine them in the task. 
+#   - These options can be overloaded in the task configuration. If so, the value set in the task will apply instead of the one set in the Email.yml file.
+            
+Check www.google.com availability:
+    period_success: 60s
+    period_retry: 10s
+    period_failed: 30s
+    retries: 5
+    providers:
+        - Ping:
+            provider_options:
+                ping_addr: 127.0.0.1
+                requested_data: status
+                count: 3
+                timeout: 3
+            condition: equals
+            threshold: 0
+    actions_failed:
+        Email:
+            email_to_addrs:
+                - admin@example.com
+            email_cc_addrs: 
+            email_subject: "Google.com is no longer available"
+            services_monitored: "https://www.google.com"
+    actions_success:
+        Email:
+            email_to_addrs:
+                - admin@example.com
+            email_cc_addrs: 
+            email_subject: "Google.com is available again"
+            services_monitored: "https://www.google.com"
+
+...

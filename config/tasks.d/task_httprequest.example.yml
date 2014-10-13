@@ -1,20 +1,23 @@
 ---
 
 # This is an example of task using HttpRequest Provider.
-# This task checks every 60 seconds ("period" parameter) if the web site www.google.com ("url" provider option) is available 
+# This task checks every 60 seconds ("period_success" parameter) if the web site www.google.com ("url" provider option) is available 
 # (it expects the HTTP status code returned (provider option "requested_data") to be equals ("condition" parameter) to 200 ("threshold" parameter).
 #
-# If the site is unavailable, it retries an HTTP request 3 more times ("retries" parameter) with a 60s interval ("period" parameter) before processing 
+# If the site is unavailable, it retries an HTTP request 3 more times ("retries" parameter) with a 10s interval ("period_retry" parameter) before processing 
 # the configured action(s).
 # If the task fails (HTTP status code different than 200) 3 times successively, an email (set in "actions_failed" parameter) is sent.
-# If the task is back to success (HTTP status code equal to 200) while it was failed, an email (set in "actions_success" parameter) is sent.
+# While the task is failed, it retries every 30s ("period_failed" parameter) to check if the site is avaiable again. If the task is back to success 
+# (HTTP status code equal to 200) while it was failed, an email (set in "actions_success" parameter) is sent.
 #
 # Note that some Email Action's options are defined in actions.d/Email.yml file (mostly server options which should be common for all tasks).
 #   - These options are used by Email Action without the need to redefine them in the task. 
 #   - These options can be overloaded in the task configuration. If so, the value set in the task will apply instead of the one set in the Email.yml file.
             
 Check www.google.com availability:
-    period: 60s
+    period_success: 60s
+    period_retry: 10s
+    period_failed: 30s
     retries: 3
     providers: 
         - HttpRequest:
