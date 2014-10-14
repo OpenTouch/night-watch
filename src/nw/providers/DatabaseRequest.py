@@ -65,11 +65,11 @@ class DatabaseRequest(Provider):
                 cursor = db.cursor()
                 lineNumber = cursor.execute(self.query)
                 if (lineNumber != 0):
-                    getLogger(__name__).info("The database request for : " + self.database_name + "is success.")
+                    getLogger(__name__).info("The database request for : " + self.database_name + " is success.")
                     return "OK"
                 else:
                     return "NOK"
-                    getLogger(__name__).info("The database request for : " + self.database_name + "is failed.")
+                    getLogger(__name__).info("The database request for : " + self.database_name + " is failed.")
             except:
                 getLogger(__name__).info("The database " + self.database_name + " is not accessible. Please check your credentials in the configuration file.")
                 return "NOK"        

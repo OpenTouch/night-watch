@@ -55,7 +55,7 @@ Check mysql database request:
                 database_name: database_name
                 user_database: user_database
                 password_database: password_database
-                request: """SELECT * FROM userTable"""
+                request: "SELECT * FROM userTable"
             condition: equals
             threshold: OK
     actions_failed:
