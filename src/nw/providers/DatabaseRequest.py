@@ -37,17 +37,21 @@ class DatabaseRequest(Provider):
         database_type = self._config.get('database_type')
         if (database_type == "postgresql"):
             getLogger(__name__).info(database_type + "is selected")
-            con = psycopg2.connect(host=str(self._config.get('machine_addr')), database=str(self._config.get('database_name')), user=str(self._config.get('user_database')), password=str(self._config.get('password_database')))
-            cur = con.cursor(cursor_factory=psycopg2.extras.DictCursor)
-            cur.execute(self._config.get('request'))
-            result = cur.fetchone()
-            con.commit()
-            if result == "" and result == None:
-                getLogger(__name__).info("The database request for " + self._config.get('database_name') + " is failed.")
+            try:
+                con = psycopg2.connect(host=str(self._config.get('machine_addr')), database=str(self._config.get('database_name')), user=str(self._config.get('user_database')), password=str(self._config.get('password_database')))
+                cur = con.cursor(cursor_factory=psycopg2.extras.DictCursor)
+                cur.execute(self._config.get('request'))
+                result = cur.fetchone()
+                con.commit()
+                if result == "" and result == None:
+                    getLogger(__name__).info("The database request for " + self._config.get('database_name') + " is failed.")
+                    return "NOK"
+                else:
+                    getLogger(__name__).info("The database request for " + self._config.get('database_name') + " is success.")
+                    return "OK"
+            except:
+                getLogger(__name__).info("The database " + self._config.get('database_name') + " is not accessible. Please check your credentials in the configuration file.")
                 return "NOK"
-            else:
-                getLogger(__name__).info("The database request for " + self._config.get('database_name') + " is success.")
-                return "OK"
         elif (database_type == "mysql"):
             getLogger(__name__).info(database_type + "is selected")
         else: 
