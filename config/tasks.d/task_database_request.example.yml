@@ -2,9 +2,8 @@
 
 # This task allows to detect if a postgresql or mysql resquest is valid or not.
 # To differenciate the type of request, type "postgresql" or "mysql" in the database_type variable
-# Be carefull : mysql requests is not implemented for the moment. 
 # To that, you have to give 4 mandatories parameters in the providers_options:
-# - machine_addr : "localhost" or thr io of your machine.
+# - machine_addr : "localhost" or the ip of your machine.
 # - database_name : name of your database model
 # - user_database : user who has rights in your database
 # - password_database : password ot the user previously written
@@ -12,7 +11,7 @@
 # if the request response is not empty, then we consider that OK (success) else NOK (failed)
 # - user_database
             
-Check www.google.com availability:
+Check postgresql database request:
     period_success: 60s
     period_retry: 10s
     period_failed: 30s
@@ -33,14 +32,45 @@ Check www.google.com availability:
             email_to_addrs:
                 - admin@example.com
             email_cc_addrs: 
-            email_subject: "Google.com is no longer available"
-            services_monitored: "https://www.google.com"
+            email_subject: "The result of your request is empty."
+            services_monitored: "Your postgresql request."
     actions_success:
         Email:
             email_to_addrs:
                 - admin@example.com
             email_cc_addrs: 
-            email_subject: "Google.com is available again"
-            services_monitored: "https://www.google.com"
+            email_subject: "The result of your request is not empty."
+            services_monitored: "Your postgresql request."
+
+Check mysql database request:
+    period_success: 60s
+    period_retry: 10s
+    period_failed: 30s
+    retries: 5
+    providers:
+        - DatabaseRequest:
+            provider_options:
+                database_type: mysql
+                machine_addr: localhost
+                database_name: database_name
+                user_database: user_database
+                password_database: password_database
+                request: """SELECT * FROM userTable"""
+            condition: equals
+            threshold: OK
+    actions_failed:
+        Email:
+            email_to_addrs:
+                - admin@example.com
+            email_cc_addrs: 
+            email_subject: "The result of your request is empty."
+            services_monitored: "Your mysql request."
+    actions_success:
+        Email:
+            email_to_addrs:
+                - admin@example.com
+            email_cc_addrs: 
+            email_subject: "The result of your request is not empty."
+            services_monitored: "Ypur mysql request."
 
 ...

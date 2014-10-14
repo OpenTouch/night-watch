@@ -17,6 +17,7 @@ from nw.providers.Provider import Provider
 
 from logging import getLogger
 import psycopg2, psycopg2.extras
+import MySQLdb
 
 class DatabaseRequest(Provider):
     
@@ -32,30 +33,48 @@ class DatabaseRequest(Provider):
     
     def __init__(self, options):
         Provider.__init__(self, options)
+        self.machine_addr = self._config.get('machine_addr')
+        self.user = self._config.get('user_database')
+        self.password = self._config.get('password_database')
+        self.database_name = self._config.get('database_name')
+        self.database_type = self._config.get('database_type')
+        self.query = self._config.get('request')
 
     def process(self):
-        database_type = self._config.get('database_type')
-        if (database_type == "postgresql"):
-            getLogger(__name__).info(database_type + "is selected")
+        if (self.database_type == "postgresql"):
+            getLogger(__name__).info(self.database_type + "is selected")
             try:
-                con = psycopg2.connect(host=str(self._config.get('machine_addr')), database=str(self._config.get('database_name')), user=str(self._config.get('user_database')), password=str(self._config.get('password_database')))
+                con = psycopg2.connect(host=str(self.machine_addr), database=str(self.database_name), user=str(self.user), password=str(self.password))
                 cur = con.cursor(cursor_factory=psycopg2.extras.DictCursor)
-                cur.execute(self._config.get('request'))
+                cur.execute(self.query)
                 result = cur.fetchone()
                 con.commit()
                 if result == "" and result == None:
-                    getLogger(__name__).info("The database request for " + self._config.get('database_name') + " is failed.")
+                    getLogger(__name__).info("The database request for " + self.database_name + " is failed.")
                     return "NOK"
                 else:
-                    getLogger(__name__).info("The database request for " + self._config.get('database_name') + " is success.")
+                    getLogger(__name__).info("The database request for " + self.database_name + " is success.")
                     return "OK"
             except:
-                getLogger(__name__).info("The database " + self._config.get('database_name') + " is not accessible. Please check your credentials in the configuration file.")
+                getLogger(__name__).info("The database " + self.database_name + " is not accessible. Please check your credentials in the configuration file.")
                 return "NOK"
-        elif (database_type == "mysql"):
-            getLogger(__name__).info(database_type + "is selected")
+        elif (self.database_type == "mysql"):
+            getLogger(__name__).info(self.database_type + "is selected")
+            try:
+                db = MySQLdb.connect(self.machine_addr, self.user, self.password, self.database_name)
+                cursor = db.cursor()
+                lineNumber = cursor.execute(self.query)
+                if (lineNumber != 0):
+                    getLogger(__name__).info("The database request for : " + self.database_name + "is success.")
+                    return "OK"
+                else:
+                    return "NOK"
+                    getLogger(__name__).info("The database request for : " + self.database_name + "is failed.")
+            except:
+                getLogger(__name__).info("The database " + self.database_name + " is not accessible. Please check your credentials in the configuration file.")
+                return "NOK"        
         else: 
-            getLogger(__name__).error(database_type + " is not a type of database known.")
+            getLogger(__name__).error(self.database_type + " is not a type of database known by this tool.")
 
     
     # This function is called by __init__ of the abstract Provider class, it verify during the object initialization if the Provider' configuration is valid.
