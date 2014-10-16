@@ -111,7 +111,7 @@ class Facette(Provider):
         
         if self.requested_data == 'raw_value':
             # Get the value from the requested metric and return it
-            value = self._getMetricValueFromPlot(self, plot, self.series_names[self._config.get('metric_name')], self.plot_info)
+            value = self._getMetricValueFromPlot(plot, self.series_names[self._config.get('metric_name')], self.plot_info)
             getLogger(__name__).debug('Value is ' + str(value) + ' for requested metric "' + self._config.get('metric_name') + '". Read from graph with id ' + self.graph_id + ', serie name "' + self.series_names[self._config.get('metric_name')] + '"')
             return value
         
