@@ -41,7 +41,7 @@ class Task():
             raise ValueError('Mandatory parameter period_success is not provided to task "' + name + '"')
         self.period_success = period_success
         
-        if period_retry is None:
+        if retries is not None and period_retry is None:
             raise ValueError('Mandatory parameter period_retry is not provided to task "' + name + '"')
         self.period_retry = period_retry
         

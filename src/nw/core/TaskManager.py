@@ -90,7 +90,7 @@ class TaskManager:
                     except Exception, e:
                         # TBD: Exit program with critical error or execute the successfully loaded tasks anyway?
                         print "Error occurred during the Night Watch starting..."
-                        getLogger(__name__).critical('Could not load task "' + task_name + '" from task config file ' + task_file + '. Reason is: ' + e.message, exc_info=True)
+                        getLogger(__name__).critical('Could not load task "' + task_name + '" from task config file ' + task_file + '. Reason is: ' + str(e.message), exc_info=True)
                         sys.exit(2)
 
 

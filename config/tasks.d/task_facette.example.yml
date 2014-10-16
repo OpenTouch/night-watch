@@ -31,7 +31,7 @@ Check load average on host1.example.net server (available on demo.facette.io ser
                 #graph_name_filter: host1.example.net - load average # Doesn't work because the graph name contains special characters on demo.facette.io server
                 source_name: host1.example.net
                 metric_name: load.midterm
-                plot_range: 300s
+                plot_range: -300s
                 plot_info: avg
             condition: lower
             threshold: 2.5
