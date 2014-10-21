@@ -129,10 +129,14 @@ class Facette(Provider):
                 # Add the value to the numerator array
                 denominator_values.append(value)
             # Compute the ratio
-            getLogger(__name__).debug('Compute ratio from following values: ' + str(numerator_values) + ' / ' + str(denominator_values))
-            ratio = sum(numerator_values) / sum(denominator_values)
-            getLogger(__name__).debug('Ratio value is ' + str(ratio) + ' for requested metrics (' + str(self._config.get('metrics_names_list_numerator')) + ') / (' + str(self._config.get('metrics_names_list_denominator')) + '). Read from graph with id ' + self.graph_id)
-            return ratio
+            if None in numerator_values or None in denominator_values:
+                getLogger(__name__).error('Not able to compute ratio from following values: ' + str(numerator_values) + ' / ' + str(denominator_values))
+                raise Exception('Not able to compute the ratio as some values collected using Facette server are None')
+            else:
+                getLogger(__name__).debug('Compute ratio from following values: ' + str(numerator_values) + ' / ' + str(denominator_values))
+                ratio = sum(numerator_values) / sum(denominator_values)
+                getLogger(__name__).debug('Ratio value is ' + str(ratio) + ' for requested metrics (' + str(self._config.get('metrics_names_list_numerator')) + ') / (' + str(self._config.get('metrics_names_list_denominator')) + '). Read from graph with id ' + self.graph_id)
+                return ratio
     
     
     def _findGraph(self, fc, source_name, metrics_names_list, graph_name = None):

@@ -34,7 +34,7 @@ class Scheduler:
         trigger = self._getTrigger(policy)
         # Add the job to the scheduler
         j = self.scheduler.add_job(job_function, name = job_name, max_instances = 1, trigger=trigger)
-        getLogger(__name__).debug('Job "' + job_name +'" has been added to scheduler, it has the id ' + j.id)
+        getLogger(__name__).debug('Job "' + job_name +'" has been added to scheduler, it has the id ' + j.id + '. It is scheduled every ' + policy)
         # Store job if so that we can update it if needed
         self.jobs[job_name] = j.id
 
