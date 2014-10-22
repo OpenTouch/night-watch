@@ -46,7 +46,7 @@ class Action:
             overwrite the configuration read from Action's configuration file.
         '''
         # Read Action's config file
-        self._config = ActionsManager.getActionConfig(self.__class__.__name__).copy()
+        self._config = ActionsManager.getActionConfig(self.__class__.__name__)
         if task_options and type(task_options) is dict:
             # If Action's config file has been loaded, overwrite its config with task options
             if self._config and type(self._config) is dict:
