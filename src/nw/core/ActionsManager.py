@@ -52,7 +52,10 @@ def getActionConfig(action_name):
         - The name of the action's config file is expected to be {action's name}.py
     '''
     # Load the action's config (if exist)
-    return _loadActionConfig(action_name)
+    if _loadActionConfig(action_name):
+        return _loadActionConfig(action_name).copy()
+    else:
+        return None
 
 
 def _loadAction(action_name):

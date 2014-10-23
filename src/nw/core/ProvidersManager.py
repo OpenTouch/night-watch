@@ -52,7 +52,10 @@ def getProviderConfig(provider_name):
         - The name of the provider's config file is expected to be {provider's name}.py
     '''
     # Load the provider's config (if exist)
-    return _loadProviderConfig(provider_name)
+    if _loadProviderConfig(provider_name):
+        return _loadProviderConfig(provider_name).copy()
+    else:
+        return None
 
 
 def _loadProvider(provider_name):
