@@ -13,7 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import os, sys
+import os, sys, time
 from logging import getLogger
 
 from nw.core.Task import Task
@@ -34,6 +34,7 @@ class TaskManager:
             getLogger(__name__).info('Schedule task "' + key + '"')
             # Add job to the scheduler so that it calls task.run every task.period
             self.scheduler.addJob(task.period, task.run, task.name)
+            time.sleep(2)
         self.scheduler.start()
     
     def updateTaskPeriod(self, task):
