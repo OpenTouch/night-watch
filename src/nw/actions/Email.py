@@ -103,7 +103,7 @@ class Email(Action):
             else:
                 message += self._config.get('email_content_failed') + " " + self._config.get('services_monitored') + ".\n\n" 
                 message += _constructResultMessage(conditions, thresholds, values)
-                
+
             message += self._config.get("email_signature")
 
             message = header + message
@@ -142,6 +142,6 @@ class Email(Action):
         i = 0
         for value in values:
             resultMessage = "The condition is : " + conditions[i] + " than " + thresholds[i] + ".\n\n"
-            resultMessage += "The result of the monitor request is : " + value
+            resultMessage += "The result of the monitor request is : " + value + ".\n\n"
             i = i + 1
         return resultMessage
