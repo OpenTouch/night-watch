@@ -172,9 +172,11 @@ class Task():
             getLogger(__name__).warning('No action is defined for this task ' + self.name + '" "' + log_message)      
 
     def _is_condition_conform(self, value, provider, i):
+        if (i == 0):
+            self.provider_values = []
         condition = self.provider_conditions[i]
         threshold = self.provider_thresholds[i]
-        self.provider_value[i] = value
+        self.provider_values.append(value)
         log_msg = 'Task "' + self.name + '": provider ' + self.provider_names[i] + ' returned ' + str(value) + ', expected: ' + condition + ' ' + str(threshold)
         if _operator_dict[condition](value, threshold):
             if (self.numberOfProvidersFailed > 0):
