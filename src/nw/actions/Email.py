@@ -79,13 +79,19 @@ class Email(Action):
             header  = 'From: %s\n' % self._config.get('email_from_addr')
             # Add 'To' header
             if type(self._config.get('email_to_addrs')) is list:
-                header += 'To: %s\n' % ','.join(self._config.get('email_to_addrs'))
+                emails_list = ""
+                for email in _config.get('email_to_addrs'):
+                    emails_list += email + ", "
+                header += 'To: %s\n' % emails_list
             elif type(self._config.get('email_to_addrs')) is str:
                 header += 'To: %s\n' % self._config.get('email_to_addrs')
             # Add 'Cc' header (if needed)
             if self._config.get('email_cc_addrs'):
                 if type(self._config.get('email_cc_addrs')) is list:
-                    header += 'Cc: %s\n' % ','.join(self._config.get('email_cc_addrs'))
+                    emails_list_cc = ""
+                    for email in _config.get('email_cc_addrs'):
+                        emails_list_cc += email + ", "
+                    header += 'To: %s\n' % emails_list_cc
                 elif type(self._config.get('email_cc_addrs')) is str:
                     header += 'Cc: %s\n' % self._config.get('email_cc_addrs')
             # Add 'Subject' header
