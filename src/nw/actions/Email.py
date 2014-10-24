@@ -141,7 +141,10 @@ class Email(Action):
     def _constructResultMessage(self, conditions, thresholds, values):
         i = 0
         for value in values:
-            resultMessage = "The condition is : " + conditions[i] + " than " + thresholds[i] + ".\n\n"
-            resultMessage += "The result of the monitor request is : " + value + ".\n\n"
+            separator = " than "
+            if (conditions[i] == "equals" and conditions[i] == "different"):
+                separator = " to "
+            resultMessage = "The condition is : " + str(conditions[i]) + separator + str(thresholds[i]) + ".\n\n"
+            resultMessage += "The result of the monitor request is : " + str(value) + ".\n\n"
             i = i + 1
         return resultMessage
