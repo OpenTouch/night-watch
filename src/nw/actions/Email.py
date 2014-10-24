@@ -56,7 +56,7 @@ class Email(Action):
         self.smtp_srv_url = self._config.get('smtp_srv_url') or 'localhost'
 
 
-    def process(self, state):
+    def process(self, state, conditions, thresholds, values):
         # TODO: improve the Email action (add template, options,...)
         # Send an email
         try:
@@ -99,9 +99,11 @@ class Email(Action):
 
             if state == True:
                 message += self._config.get('email_content_success') + " " + self._config.get('services_monitored') + ".\n\n" 
+                message += _constructResultMessage(conditions, thresholds, values)
             else:
                 message += self._config.get('email_content_failed') + " " + self._config.get('services_monitored') + ".\n\n" 
-
+                message += _constructResultMessage(conditions, thresholds, values)
+                
             message += self._config.get("email_signature")
 
             message = header + message
@@ -135,3 +137,11 @@ class Email(Action):
             getLogger(__name__).error('Option "smtp_srv_tls_certfile" is provided to action Email, but the file is not accessible. Please check Email configuration.')
             return False
         return True
+
+    def _constructResultMessage(self, conditions, thresholds, values):
+        i = 0
+        for value in values:
+            resultMessage = "The condition is : " + conditions[i] + " than " + thresholds[i] + ".\n\n"
+            resultMessage += "The result of the monitor request is : " + value
+            i = i + 1
+        return resultMessage

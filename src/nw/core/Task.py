@@ -66,6 +66,7 @@ class Task():
         self.provider_names = []
         self.provider_conditions = []
         self.provider_thresholds = []
+        self.provider_values = []
         self._loadProviders(self.providers, providers)
         self.numberOfProvidersFailed = 0
         self.numberOfProviders = len(self.providers)
@@ -140,7 +141,7 @@ class Task():
                             self._updateTaskPeriod(self.period_failed)
                             getLogger(__name__).warning('Task "' + self.name + '" just failed, process the actions_failed')
                             log_message = "when the task failed"
-                            self._makeAction(self.actions_failed, log_message, False)
+                            self._makeAction(self.actions_failed, log_message, False, self.provider_conditions, self.provider_thresholds, self.provider_values)
                                 
                     else: # Task is conform
                         if self._remaining_retries != self.retries:
@@ -154,17 +155,17 @@ class Task():
                             self._updateTaskPeriod(self.period_success)
                             getLogger(__name__).info('Task "' + self.name + '" is back to normal, process the actions_success')
                             log_message = "when the task is back to normal"
-                            self._makeAction(self.actions_success, log_message, True)
+                            self._makeAction(self.actions_success, log_message, True, self.provider_conditions, self.provider_thresholds, self.provider_values)
                         else:
                             getLogger(__name__).debug('Task "' + self.name + '" is still normal.')
             i = i + 1
                     
-    def _makeAction(self, actions_to_do, log_message, state):
+    def _makeAction(self, actions_to_do, log_message, state, conditions, thresholds, values):
         if (actions_to_do):
             for action in actions_to_do:
                 try:
                     getLogger(__name__).info('Process the action "' + action.__class__.__name__ + '" for task "' + self.name + '" "' + log_message)
-                    action.process(state)
+                    action.process(state, conditions, thresholds, values)
                 except:
                     getLogger(__name__).error('Action "' + action.__class__.__name__ + '" for task "' + self.name + '" "' + log_message +'" raised an error while processing', exc_info=True)
         else:
@@ -173,6 +174,7 @@ class Task():
     def _is_condition_conform(self, value, provider, i):
         condition = self.provider_conditions[i]
         threshold = self.provider_thresholds[i]
+        self.provider_value[i] = value
         log_msg = 'Task "' + self.name + '": provider ' + self.provider_names[i] + ' returned ' + str(value) + ', expected: ' + condition + ' ' + str(threshold)
         if _operator_dict[condition](value, threshold):
             if (self.numberOfProvidersFailed > 0):
