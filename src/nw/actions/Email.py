@@ -99,10 +99,10 @@ class Email(Action):
 
             if state == True:
                 message += self._config.get('email_content_success') + " " + self._config.get('services_monitored') + ".\n\n" 
-                message += _constructResultMessage(conditions, thresholds, values)
             else:
                 message += self._config.get('email_content_failed') + " " + self._config.get('services_monitored') + ".\n\n" 
-                message += _constructResultMessage(conditions, thresholds, values)
+
+            message += self._constructResultMessage(conditions, thresholds, values)
 
             message += self._config.get("email_signature")
 
