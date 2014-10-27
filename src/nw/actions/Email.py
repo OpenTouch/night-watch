@@ -80,7 +80,7 @@ class Email(Action):
             # Add 'To' header
             if type(self._config.get('email_to_addrs')) is list:
                 emails_list = ""
-                for email in _config.get('email_to_addrs'):
+                for email in self._config.get('email_to_addrs'):
                     emails_list += email + ", "
                 header += 'To: %s\n' % emails_list
             elif type(self._config.get('email_to_addrs')) is str:
@@ -89,7 +89,7 @@ class Email(Action):
             if self._config.get('email_cc_addrs'):
                 if type(self._config.get('email_cc_addrs')) is list:
                     emails_list_cc = ""
-                    for email in _config.get('email_cc_addrs'):
+                    for email in self._config.get('email_cc_addrs'):
                         emails_list_cc += email + ", "
                     header += 'To: %s\n' % emails_list_cc
                 elif type(self._config.get('email_cc_addrs')) is str:
