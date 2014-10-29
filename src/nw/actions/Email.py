@@ -57,9 +57,42 @@ class Email(Action):
 
 
     def process(self, state, conditions, thresholds, values):
-        # TODO: improve the Email action (add template, options,...)
-        # Send an email
-        try:
+        # TODO: improve the Email action (add template, options,...)     
+        # Build email header
+        # Add 'From' header
+        header  = 'From: %s\n' % self._config.get('email_from_addr')
+        # Add 'To' header
+        if type(self._config.get('email_to_addrs')) is list:
+            header += 'To: %s\n' % ','.join(self._config.get('email_to_addrs'))
+        elif type(self._config.get('email_to_addrs')) is str:
+            header += 'To: %s\n' % self._config.get('email_to_addrs')
+        # Add 'Cc' header (if needed)
+        if self._config.get('email_cc_addrs'):
+            if type(self._config.get('email_cc_addrs')) is list:
+                header += 'Cc: %s\n' % ','.join(self._config.get('email_cc_addrs'))
+            elif type(self._config.get('email_cc_addrs')) is str:
+                header += 'Cc: %s\n' % self._config.get('email_cc_addrs')
+        # Add 'Subject' header
+        subject = self._config.get('email_subject') or ''
+        header += 'Subject: %s\n\n' % subject
+        
+        # Build email message (concatenate email header and email body)
+        message = "Hello, \n\n"
+        message += self._config.get('email_header') + ".\n\n"
+
+        if state == True:
+            message += self._config.get('email_content_success') + " " + self._config.get('services_monitored') + ".\n\n" 
+        else:
+            message += self._config.get('email_content_failed') + " " + self._config.get('services_monitored') + ".\n\n" 
+
+        message += self._constructResultMessage(conditions, thresholds, values)
+
+        message += self._config.get("email_signature")
+
+        message = header + message
+            
+        # Send the email
+        try:           
             # Connect to the SMTP server
             self.smtp = smtplib.SMTP(self.smtp_srv_url, 
                                     self._config.get('smtp_srv_port'))
@@ -74,46 +107,6 @@ class Email(Action):
                 getLogger(__name__).debug('Login to the SMTP server with credentials ' + self._config.get('smtp_srv_login') + ':' + self._config.get('smtp_srv_password'))
                 self.smtp.login(self._config.get('smtp_srv_login'), self._config.get('smtp_srv_password'))
                 
-            # Build email header
-            # Add 'From' header
-            header  = 'From: %s\n' % self._config.get('email_from_addr')
-            # Add 'To' header
-            if type(self._config.get('email_to_addrs')) is list:
-                emails_list = ""
-                for email in self._config.get('email_to_addrs'):
-                    emails_list += email + ", "
-                header += 'To: %s\n' % emails_list
-            elif type(self._config.get('email_to_addrs')) is str:
-                header += 'To: %s\n' % self._config.get('email_to_addrs')
-            # Add 'Cc' header (if needed)
-            if self._config.get('email_cc_addrs'):
-                if type(self._config.get('email_cc_addrs')) is list:
-                    emails_list_cc = ""
-                    for email in self._config.get('email_cc_addrs'):
-                        emails_list_cc += email + ", "
-                    header += 'To: %s\n' % emails_list_cc
-                elif type(self._config.get('email_cc_addrs')) is str:
-                    header += 'Cc: %s\n' % self._config.get('email_cc_addrs')
-            # Add 'Subject' header
-            subject = self._config.get('email_subject') or ''
-            header += 'Subject: %s\n\n' % subject
-            
-            # Build email message (concatenate email header and email body)
-
-            message = "Hello, \n\n"
-            message += self._config.get('email_header') + ".\n\n"
-
-            if state == True:
-                message += self._config.get('email_content_success') + " " + self._config.get('services_monitored') + ".\n\n" 
-            else:
-                message += self._config.get('email_content_failed') + " " + self._config.get('services_monitored') + ".\n\n" 
-
-            message += self._constructResultMessage(conditions, thresholds, values)
-
-            message += self._config.get("email_signature")
-
-            message = header + message
-            
             # Send the email
             self.smtp.sendmail(self._config.get('email_from_addr'), self._config.get('email_to_addrs'), message)  
             getLogger(__name__).info('Email sent')
