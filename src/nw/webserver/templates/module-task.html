@@ -1,0 +1,18 @@
+<p> {{ task.name }} </p>
+<ul>
+	<li> is enabled: {{ task._task_enabled }} </li>
+	<li> period: {{ task.period }} </li>
+	<li> retries: {{ task.retries }} </li>
+	<li> remaining retries: {{ task._remaining_retries }} </li>
+	<li> is failed: {{ task._task_failed }} </li>
+	{% if show_config %}
+	<li> task configuration:</li>
+		<ul>
+			<li> period_success: {{ task.period_success }} </li>
+			<li> period_retry: {{ task.period_retry }} </li>
+			<li> period_failed: {{ task.period_failed }} </li>
+			<li> period_retry: {{ task.period_retry }} </li>
+			<li> period_retry: {{ task.period_retry }} </li>
+		</ul>
+	{% end %}
+</ul>

@@ -86,6 +86,8 @@ class Task():
             
         # Boolean used to know if the task already failed in the previous iteration (allows to perform actions only the first time the issue failed)
         self._task_failed = False
+        # Boolean used to know if the task is enabled or not (i.e. job is running or paused in scheduler)
+        self._task_enabled = True
 
     def _loadActions(self, actions_loaded, actions):
         for action_name, action_options in actions.iteritems():
@@ -159,6 +161,41 @@ class Task():
                         else:
                             getLogger(__name__).debug('Task "' + self.name + '" is still normal.')
             i = i + 1
+            
+    def disableTask(self):
+        if self._task_enabled:
+            getLogger(__name__).debug('Disable task "' + self.name + '".')
+            nw.core.TaskManager.getTaskManager().pauseTask(self)
+            self._task_enabled = False
+        else:
+            getLogger(__name__).warning('Tried to disable task "' + self.name + '" but it is already disabled.')
+            
+    def enableTask(self):
+        if not self._task_enabled:
+            getLogger(__name__).info('Enable task "' + self.name + '".')
+            nw.core.TaskManager.getTaskManager().resumeTask(self)
+            self._task_enabled = True
+        else:
+            getLogger(__name__).warning('Tried to enable task "' + self.name + '" but it is already enabled.')
+            
+    def toDict(self):
+        return {
+                'name': self.name,
+                'is_enabled': self._task_enabled,
+                'period': self.period,
+                'retries': self.retries,
+                'remaining_retries': self._remaining_retries,
+                'is_failed': self._task_failed
+                }
+            
+    def __str__(self):
+        return ("Task {task_name}:\n" +\
+                "    - is enabled: {enabled}\n" +\
+                "    - period: {period}\n" +\
+                "    - retries: {retries}\n" +\
+                "    - remaining_retries: {remaining_retries}\n" +\
+                "    - is_failed: {task_failed}"
+                ).format(task_name=self.name, enabled=self._task_enabled, period=self.period, retries=self.retries, remaining_retries=self._remaining_retries, task_failed=self._task_failed)
                     
     def _makeAction(self, actions_to_do, log_message, state, conditions, thresholds, values):
         if (actions_to_do):

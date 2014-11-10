@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block title %} Night Watch homepage {% end %}
+{% block header %} 
+	<header id="header" class="page-header jumbotron">
+		<h1>Night Watch</h1>
+		<p> {{ len(Tasks) }} tasks are setup in Night Watch. </p>
+	</header>
+{% end %}
+
+{% block content %}
+<p>The following tasks are setup in Night Watch:</p>
+<ul>
+	{% for task_name in sorted(Tasks.iterkeys()) %}
+	<li>
+	{{ task_name }}
+	</li>
+	{% end %}
+</ul>
+{% end %}

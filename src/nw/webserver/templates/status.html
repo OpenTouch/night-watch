@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %} Night Watch status {% end %}
+
+{% block header %} 
+	<header id="header" class="page-header jumbotron">
+		<h1>Night Watch</h1>
+		<p> {{ len(Tasks) }} tasks are setup in Night Watch. </p>
+	</header>
+{% end %}
+
+{% block content %}
+	{% set i = 0 %}
+	{% for task_name, task in sorted(Tasks.iteritems()) %}
+		{% set i += 1 %}
+		{% if i%3 == 1 %}
+		<div class="row">
+		{% end %}
+			<div class="col-sm-4">
+				{% if task._task_enabled == False %}
+				<div class="panel panel-default">
+				{% elif task._task_failed == False %}
+				<div class="panel panel-success">
+				{% elif task._task_failed == True %}
+				<div class="panel panel-danger">
+				{% end %}
+					<div class="panel-heading">
+						<h3 class="panel-title">{{ task_name }}</h3>
+						<a href="task.html?name={{ url_escape(task_name) }}">Detail</a>
+					</div>
+					<div class="panel-body">
+						{% module Task(task) %}
+					</div>
+				</div>
+			</div>
+		{% if i%3 == 0 %}
+		</div>
+		{% end %}
+		{% end %}
+		</div>
+{% end %}

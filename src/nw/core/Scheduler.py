@@ -50,6 +50,21 @@ class Scheduler:
         self.scheduler.reschedule_job(self.jobs.get(job_name), trigger=trigger)
 
 
+    def pauseJob(self, job_name):
+        # Check that the job with job_name well exist
+        if not(self.jobs.has_key(job_name)):
+            raise Exception ('Job named "' + job_name + '" can not be paused because it is not registered in scheduler')
+        getLogger(__name__).debug('Pause job "' + job_name +'" having id ' + self.jobs.get(job_name))
+        self.jobs.get(job_name).pause()
+
+
+    def resumeJob(self, job_name):
+        # Check that the job with job_name well exist
+        if not(self.jobs.has_key(job_name)):
+            raise Exception ('Job named "' + job_name + '" can not be resumed because it is not registered in scheduler')
+        getLogger(__name__).debug('Resume job "' + job_name +'" having id ' + self.jobs.get(job_name))
+        self.jobs.get(job_name).resume()
+
     def start(self):
         self.scheduler.start()
         getLogger(__name__).info('Start scheduler')

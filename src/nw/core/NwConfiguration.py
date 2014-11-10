@@ -42,6 +42,9 @@ class NwConfiguration:
             self.tasks_location = config['config']["tasks_location"]
             self.providers_location = config['config']["providers_location"]
             self.actions_location = config['config']["actions_location"]
+            
+            # webserver configuration
+            self.is_webserver_enabed = config['config'].get("webserver_enabled")
         
             logger.info('Configuration parsed')
             logger.debug(str(self))

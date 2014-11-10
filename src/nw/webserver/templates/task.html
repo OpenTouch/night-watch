@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %} Night Watch: detail of task {{ Task.name }} {% end %}
+
+{% block header %} 
+	<header id="header" class="page-header jumbotron">
+		<h1>Night Watch</h1>
+		<p> Detail of task {{ Task.name }} </p>
+	</header>
+{% end %}
+
+{% block content %}
+	{% if Task._task_enabled == False %}
+	<div class="panel panel-default">
+	{% elif Task._task_failed == False %}
+	<div class="panel panel-success">
+	{% elif Task._task_failed == True %}
+	<div class="panel panel-danger">
+	{% end %}
+		<div class="panel-heading">
+			<h3 class="panel-title">{{ Task.name }}</h3>
+		</div>
+		<div class="panel-body">
+			{% module Task(Task, True) %}
+		</div>
+	</div>
+{% end %}

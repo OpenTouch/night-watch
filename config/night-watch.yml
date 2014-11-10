@@ -7,6 +7,7 @@ config:
     tasks_location: /etc/night-watch/tasks.d
     providers_location: /etc/night-watch/providers.d
     actions_location: /etc/night-watch/actions.d
+    webserver_enabled: True
 
 # Define the logging rules (mandatory parameters)
 # Note: the logging section must be a dictionary parsable by the logging.dictConfig() function

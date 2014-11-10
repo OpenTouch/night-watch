@@ -34,7 +34,7 @@ class TaskManager:
             getLogger(__name__).info('Schedule task "' + key + '"')
             # Add job to the scheduler so that it calls task.run every task.period
             self.scheduler.addJob(task.period, task.run, task.name)
-            time.sleep(2)
+            time.sleep(0.5)
         self.scheduler.start()
     
     def updateTaskPeriod(self, task):
@@ -42,6 +42,16 @@ class TaskManager:
         getLogger(__name__).debug('Reschedule task "' + task.name + '" to period ' + task.period)
         # Update scheduler job so that it redefines periodicity of calls to task.run for task task.name
         self.scheduler.rescheduleJob(task.period, task.name)
+    
+    def pauseTask(self, task):
+        # Pause the task in scheduler
+        getLogger(__name__).debug('Pause task "' + task.name)
+        self.scheduler.pauseJob(task.name)
+    
+    def resumeTask(self, task):
+        # Resume the task in scheduler
+        getLogger(__name__).debug('Resume task "' + task.name)
+        self.scheduler.resumeJob(task.name)
     
     def stop(self):
         # Stop the scheduler
@@ -99,3 +109,9 @@ tm = TaskManager()
 
 def getTaskManager():
     return tm
+
+def getTasks():
+    #tasks = {}
+    #for task_name, task in tm.tasks.iteritems():
+    #    tasks[task_name] = task.toDict()
+    return tm.tasks

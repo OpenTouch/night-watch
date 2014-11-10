@@ -52,12 +52,18 @@ if __name__ == "__main__":
     
     # Reconfigure the logger now that the logging section from night-watch config file has been loaded
     Log.reconfigure(config.logging)
-    
+
     # Start TaskManager
     TaskManager.getTaskManager().start()
     
-    while not shutdown:
-        time.sleep(1)
+    # Start WebServer if it is enabled in config file, otherwise enter in while loop
+    if config.is_webserver_enabed:
+        from nw.webserver import WebServer
+        WebServer.start()
+
+    else:
+        while not shutdown:
+            time.sleep(1)
 
     # Stop TaskManager before exiting
     TaskManager.getTaskManager().stop()
