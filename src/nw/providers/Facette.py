@@ -131,7 +131,8 @@ class Facette(Provider):
             # Compute the ratio
             if None in numerator_values or None in denominator_values:
                 getLogger(__name__).error('Not able to compute ratio from following values: ' + str(numerator_values) + ' / ' + str(denominator_values))
-                raise Exception('Not able to compute the ratio as some values collected using Facette server are None')
+                return None
+                #raise Exception('Not able to compute the ratio as some values collected using Facette server are None')
             else:
                 getLogger(__name__).debug('Compute ratio from following values: ' + str(numerator_values) + ' / ' + str(denominator_values))
                 ratio = sum(numerator_values) / sum(denominator_values)
