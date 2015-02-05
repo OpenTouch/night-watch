@@ -26,7 +26,7 @@
 				{% end %}
 					<div class="panel-heading">
 						<h3 class="panel-title">{{ task_name }}</h3>
-						<a href="task.html?name={{ url_escape(task_name) }}">Detail</a>
+						<a href="task.html?task_name={{ url_escape(task_name) }}">Detail</a>
 					</div>
 					<div class="panel-body">
 						{% module Task(task) %}

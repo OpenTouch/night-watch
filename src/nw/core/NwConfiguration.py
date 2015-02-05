@@ -44,7 +44,10 @@ class NwConfiguration:
             self.actions_location = config['config']["actions_location"]
             
             # webserver configuration
-            self.is_webserver_enabed = config['config'].get("webserver_enabled")
+            self.is_webserver_enabled = config['config'].get("webserver_enabled", False)
+            if self.is_webserver_enabled:
+                self.webserver_port = config['config'].get("webserver_port", 8888)
+                self.webserver_debug = config['config'].get("webserver_debug", False)
         
             logger.info('Configuration parsed')
             logger.debug(str(self))

@@ -57,7 +57,7 @@ if __name__ == "__main__":
     TaskManager.getTaskManager().start()
     
     # Start WebServer if it is enabled in config file, otherwise enter in while loop
-    if config.is_webserver_enabed:
+    if config.is_webserver_enabled:
         from nw.webserver import WebServer
         WebServer.start()
 

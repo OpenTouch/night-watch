@@ -8,6 +8,8 @@ config:
     providers_location: /etc/night-watch/providers.d
     actions_location: /etc/night-watch/actions.d
     webserver_enabled: True
+    webserver_port: 8888
+    webserver_debug: True
 
 # Define the logging rules (mandatory parameters)
 # Note: the logging section must be a dictionary parsable by the logging.dictConfig() function
