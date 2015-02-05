@@ -33,7 +33,7 @@ def make_app():
             url(r"/task.html", TaskHandler),
         ],
         template_path = os.path.join(os.path.dirname(__file__), "templates"),
-        static_path = os.path.join(os.path.dirname(__file__), "assets"),
+        static_path = os.path.join(os.path.dirname(__file__), "static"),
         ui_modules = uimodules,
         debug=NwConfiguration.getNwConfiguration().webserver_debug
     )

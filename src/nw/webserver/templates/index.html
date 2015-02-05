@@ -3,8 +3,44 @@
 {% block title %} Night Watch homepage {% end %}
 {% block header %} 
 	<header id="header" class="page-header jumbotron">
-		<h1>Night Watch</h1>
-		<p> {{ len(Tasks) }} tasks are setup in Night Watch. </p>
+		<div class="row">
+			<div class="col-md-8">
+				<h1>Night Watch</h1>
+				<p> {{ len(Tasks) }} tasks are setup in Night Watch. </p>
+			</div>
+			
+			<div class="col-md-4">
+				<h4>Monitoring</h4>
+				<div id="btn-monitoring" class="btn-group btn-toggle"> 
+					<button id="btn-monitoring-on" class="btn btn-on btn-success active">On</button>
+					<button id="btn-monitoring-off" class="btn btn-off btn-default" >Off</button>
+				</div>
+			
+				<h4>Reload</h4>
+				<button id="reload-config-button" type="button" class="btn btn-warning" data-toggle="modal" data-target="#reloadConfigPopup">Reload config files</button>
+			</div>
+		</div>
+		
+		<div class="modal fade" id="reloadConfigPopup" tabindex="-1" role="dialog" aria-labelledby="reloadConfigPopup" aria-hidden="true">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal"  data-target="#reloadConfigPopup" aria-label="Close">
+							<span aria-hidden="true">&times;</span>
+						</button>
+						<h4 class="modal-title">Reload Night-Watch configuration files</h4>
+					</div>
+					<div class="modal-body">
+    					<p>Night-Watch will reload all its configuration files and won't monitor anymore while it's reloading (for a few seconds).</p>
+    					<p>Are you sure you want to proceed?</p>
+						<form role="form">
+							<button id="confirm-reload-config-button" type="button" class="btn btn-on btn-warning">Yes</button>
+							<button type="button" class="btn btn-default" data-dismiss="modal">No</button>
+						</form>
+					</div> <!-- /.modal-body -->
+				</div> <!-- /.modal-content -->
+			</div> <!-- /.modal-dialog -->
+		</div> <!-- /.modal -->
 	</header>
 {% end %}
 

@@ -1,0 +1,9 @@
+body {
+	padding-top: 70px;
+	padding-bottom: 30px;
+}
+
+
+.btn-toggle > .btn.active {
+	font-weight: bold;
+}

@@ -1,2 +1,2 @@
-recursive-include src/nw/webserver/assets *
 recursive-include src/nw/webserver/templates *
+recursive-include src/nw/webserver/static *
