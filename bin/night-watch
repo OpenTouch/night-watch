@@ -26,6 +26,11 @@ shutdown = False
 def sig_int_handler(signal, frame):
     global shutdown
     shutdown = True
+    try:
+        getLogger(__name__).info("Night-Watch webserver was not launched, can't stop it")
+        nw_server.stop()
+    except:
+        pass
 
 signal.signal(signal.SIGINT, sig_int_handler)
 signal.signal(signal.SIGTERM, sig_int_handler)
@@ -59,7 +64,8 @@ if __name__ == "__main__":
     # Start WebServer if it is enabled in config file, otherwise enter in while loop
     if config.is_webserver_enabled:
         from nw.webserver import WebServer
-        WebServer.start()
+        nw_server = WebServer.Webserver()
+        nw_server.start()
 
     else:
         while not shutdown:
