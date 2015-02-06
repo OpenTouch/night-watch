@@ -48,6 +48,7 @@ $('#btn-monitoring-on').click(function() {
 		success: function (data) {
 			$('#btn-monitoring-off').removeClass('btn-danger active').addClass('btn-default');
 			$('#btn-monitoring-on').removeClass('btn-default').addClass('btn-success active');
+			$('#reload-config-button').prop('disabled', false);
 		},
 		error: function(result) {
 			// Display error popup
@@ -64,6 +65,7 @@ $("#confirm-diable-monitoring-button").click(function () {
 		success: function (data) {
 			$('#btn-monitoring-on').removeClass('btn-success active').addClass('btn-default');
 			$('#btn-monitoring-off').removeClass('btn-default').addClass('btn-danger active');
+			$('#reload-config-button').prop('disabled', true);
 		},
 		error: function(result) {
 			// Display error popup
