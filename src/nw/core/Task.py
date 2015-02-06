@@ -163,6 +163,9 @@ class Task():
         else:
             getLogger(__name__).warning('Tried to enable task "' + self.name + '" but it is already enabled.')
             return False
+            
+    def isEnabled(self):
+        return self._task_enabled
                     
     def updateTaskPeriod(self, new_period):
         if new_period != self.period:

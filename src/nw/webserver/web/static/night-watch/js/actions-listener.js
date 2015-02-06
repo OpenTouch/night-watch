@@ -15,9 +15,29 @@ $('.btn-toggle').click(function() {
 
 $('#btn-monitoring').bind('btn-on', function(){
 	console.log("Enable monitoring");
+	$.ajax({
+		type: 'PUT',
+		url: "/api/v1/night-watch/resume",
+		success: function (data) {
+			$('#addContactPopup').modal('hide');
+		},
+		error: function(result) {
+			// Display error popup
+		} 
+   }); 
 });
 $('#btn-monitoring').bind('btn-off', function(){
 	console.log("Disable monitoring");
+	$.ajax({
+		type: 'PUT',
+		url: "/api/v1/night-watch/pause",
+		success: function (data) {
+			$('#addContactPopup').modal('hide');
+		},
+		error: function(result) {
+			// Display error popup
+		} 
+   }); 
 });
 
 $("#confirm-reload-config-button").click(function () {
@@ -25,14 +45,15 @@ $("#confirm-reload-config-button").click(function () {
 	/*
 	// TODO: call an API for reloading Night-Watch's config files
 	// Display a spinner / progress bar
+	*/
 	$.ajax({
 		type: 'PUT',
-		url: "/reload",
+		url: "/api/v1/night-watch/reload",
 		success: function (data) {
 			$('#addContactPopup').modal('hide');
 		},
 		error: function(result) {
 			// Display error popup
 		} 
-   }); */
+   }); 
 });

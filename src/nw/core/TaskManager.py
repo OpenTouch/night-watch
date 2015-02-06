@@ -19,6 +19,7 @@ from logging import getLogger
 from nw.core.Task import Task
 from nw.core.NwConfiguration import getNwConfiguration
 from nw.core.Scheduler import Scheduler
+from nw.core import ActionsManager, ProvidersManager
 from nw.core.Utils import isYamlFile, loadYamlFile
 
 class TaskManager:
@@ -28,6 +29,7 @@ class TaskManager:
     def __init__(self):
         self.tasks = {}
         self._scheduler = None
+        self._started = False
         
     """
     Public methods
@@ -37,26 +39,31 @@ class TaskManager:
         if not self.tasks:
             self._loadTasks()
             self._scheduleTasks()
-        self._scheduler.start()
+        if not self._started:
+            self._scheduler.start()
+            self._started = True
         getLogger(__name__).info('TaskManager started')
         
     def reload(self):
         getLogger(__name__).info('Reloading TaskManager...')
         if self._scheduler:
-            getLogger(__name__).debug('Clean current jobs from scheduler')
-            self._scheduler.stop(wait=False)
             self._scheduler.removeAllJobs()
-            getLogger(__name__).debug('Clear tasks')
-            self.tasks.clear()
+        self.tasks.clear()
+        ProvidersManager.clearProviderConfig()
+        ActionsManager.clearActionConfig()
         self.start()
         getLogger(__name__).info('TaskManager reloaded')
     
-    def stop(self):
+    def stop(self, wait=True):
         # Stop the scheduler
         if self._scheduler != None:
-            self._scheduler.stop()
+            self._scheduler.stop(wait)
+            self._started = False
             getLogger(__name__).info('TaskManager stopped')
             
+    def isRunning(self):
+        return self._started
+    
 
     def getTasks(self):
         return self.tasks

@@ -57,6 +57,13 @@ def getProviderConfig(provider_name):
     else:
         return None
 
+def clearProviderConfig():
+    '''
+    Clear config for all the Providers (if config exists). To be used only for reloading night-watch.
+    '''
+    getLogger(__name__).debug("Clear Providers' config")
+    _providerConfig.clear()
+
 
 def _loadProvider(provider_name):
     # If the provider module is not already loaded, load it

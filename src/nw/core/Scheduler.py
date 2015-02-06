@@ -26,9 +26,19 @@ class Scheduler:
         })
 
 
+    def start(self):
+        self.scheduler.start()
+        getLogger(__name__).info('Start scheduler')
+
+
+    def stop(self, wait=True):
+        self.scheduler.shutdown(wait)
+        getLogger(__name__).info('Stop scheduler')
+        
+
     def addJob(self, policy, job_function, job_name):
         # Check that a job with the same name has not already be registered
-        if self.jobs.has_key(job_name):
+        if self.jobs.has_key(job_name) and self.jobs.get(job_name) != None:
             raise Exception ('A job named "' + job_name + '" has already been scheduled')
         # Get the period trigger to use
         trigger = self._getTrigger(policy)
@@ -41,7 +51,7 @@ class Scheduler:
 
     def rescheduleJob(self, policy, job_name):
         # Check that the job with job_name well exist
-        if not(self.jobs.has_key(job_name)):
+        if not(self.jobs.has_key(job_name) or not(self.jobs.get(job_name))):
             raise Exception ('Job named "' + job_name + '" can not be rescheduled because it is not registered in scheduler')
         # Get the period trigger to use
         trigger = self._getTrigger(policy)
@@ -52,41 +62,35 @@ class Scheduler:
 
     def pauseJob(self, job_name):
         # Check that the job with job_name well exist
-        if not(self.jobs.has_key(job_name)):
+        if not(self.jobs.has_key(job_name) or not(self.jobs.get(job_name))):
             raise Exception ('Job named "' + job_name + '" can not be paused because it is not registered in scheduler')
         getLogger(__name__).debug('Pause job "' + job_name +'" having id ' + self.jobs.get(job_name))
-        self.jobs.get(job_name).pause()
+        self.scheduler.pause_job()(self.jobs.get(job_name))
 
 
     def resumeJob(self, job_name):
         # Check that the job with job_name well exist
-        if not(self.jobs.has_key(job_name)):
+        if not(self.jobs.has_key(job_name) or not(self.jobs.get(job_name))):
             raise Exception ('Job named "' + job_name + '" can not be resumed because it is not registered in scheduler')
         getLogger(__name__).debug('Resume job "' + job_name +'" having id ' + self.jobs.get(job_name))
-        self.jobs.get(job_name).resume()
-
-    def start(self):
-        self.scheduler.start()
-        getLogger(__name__).info('Start scheduler')
+        self.scheduler.resume_job(self.jobs.get(job_name))
 
 
-    def stop(self, wait=True):
-        self.scheduler.shutdown(wait)
-        getLogger(__name__).info('Stop scheduler')
-
-
-    def removeJob(self, job_name):
+    def removeJob(self, job_name, keepJobEntry=False):
         # Check that the job with job_name well exist
-        if not(self.jobs.has_key(job_name)):
+        if not(self.jobs.has_key(job_name) or not(self.jobs.get(job_name))):
             raise Exception ('Job named "' + job_name + '" can not be removed because it is not registered in scheduler')
         getLogger(__name__).debug('Remove job "' + job_name +'" from scheduler')
-        self.jobs.get(job_name).remove()
-        self.jobs.pop(job_name)
+        self.scheduler.remove_job(self.jobs.get(job_name))
+        if not keepJobEntry:
+            self.jobs.pop(job_name)
+        
         
     def removeAllJobs(self):
         getLogger(__name__).debug('Remove all jobs from scheduler')
         for job_name in self.jobs.iterkeys():
-            self.removeJob(job_name)
+            self.removeJob(job_name, True)
+            self.jobs[job_name]=None
 
 
     def _getTrigger(self, policy):

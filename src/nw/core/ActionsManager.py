@@ -57,6 +57,13 @@ def getActionConfig(action_name):
     else:
         return None
 
+def clearActionConfig():
+    '''
+    Clear config for all the Actions (if config exists). To be used only for reloading night-watch.
+    '''
+    getLogger(__name__).debug("Clear Actions' config")
+    _actionConfig.clear()
+
 
 def _loadAction(action_name):
     # If the action module is not already loaded, load it
