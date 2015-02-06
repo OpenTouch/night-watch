@@ -1,4 +1,4 @@
-$('.btn-toggle').click(function() {
+/*$('.btn-toggle').click(function() { // For generic actions on toggle
 	console.log(".btn-toggle");
 	$(this).find('.btn').toggleClass('active');
 	$(this).find('.btn:not(.active)').removeClass('btn-danger btn-success').addClass('btn-default');
@@ -33,6 +33,37 @@ $('#btn-monitoring').bind('btn-off', function(){
 		url: "/api/v1/night-watch/pause",
 		success: function (data) {
 			$('#addContactPopup').modal('hide');
+		},
+		error: function(result) {
+			// Display error popup
+		} 
+   }); 
+});*/
+
+$('#btn-monitoring-on').click(function() {
+	console.log("Enable monitoring");
+	$.ajax({
+		type: 'PUT',
+		url: "/api/v1/night-watch/resume",
+		success: function (data) {
+			$('#btn-monitoring-off').removeClass('btn-danger active').addClass('btn-default');
+			$('#btn-monitoring-on').removeClass('btn-default').addClass('btn-success active');
+		},
+		error: function(result) {
+			// Display error popup
+		} 
+   }); 
+});
+
+$("#confirm-diable-monitoring-button").click(function () {
+	console.log("Disable monitoring");
+	$('#disableMonitoringPopup').modal('hide');
+	$.ajax({
+		type: 'PUT',
+		url: "/api/v1/night-watch/pause",
+		success: function (data) {
+			$('#btn-monitoring-on').removeClass('btn-success active').addClass('btn-default');
+			$('#btn-monitoring-off').removeClass('btn-default').addClass('btn-danger active');
 		},
 		error: function(result) {
 			// Display error popup

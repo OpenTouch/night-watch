@@ -13,13 +13,34 @@
 				<h4>Monitoring</h4>
 				<div id="btn-monitoring" class="btn-group btn-toggle"> 
 					<button id="btn-monitoring-on" class="btn btn-on btn-success active">On</button>
-					<button id="btn-monitoring-off" class="btn btn-off btn-default" >Off</button>
+					<button id="btn-monitoring-off" class="btn btn-off btn-default" data-toggle="modal" data-target="#disableMonitoringPopup">Off</button>
 				</div>
 			
 				<h4>Reload</h4>
 				<button id="reload-config-button" type="button" class="btn btn-warning" data-toggle="modal" data-target="#reloadConfigPopup">Reload config files</button>
 			</div>
 		</div>
+		
+		<div class="modal fade" id="disableMonitoringPopup" tabindex="-1" role="dialog" aria-labelledby="disableMonitoringPopup" aria-hidden="true">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal"  data-target="#disableMonitoringPopup" aria-label="Close">
+							<span aria-hidden="true">&times;</span>
+						</button>
+						<h4 class="modal-title">Pause Night-Watch monitoring?</h4>
+					</div>
+					<div class="modal-body">
+    					<p>Night-Watch will stop monitoring.</p>
+    					<p>Are you sure you want to proceed?</p>
+						<form role="form">
+							<button id="confirm-diable-monitoring-button" type="button" class="btn btn-on btn-warning">Yes</button>
+							<button type="button" class="btn btn-default" data-dismiss="modal">No</button>
+						</form>
+					</div> <!-- /.modal-body -->
+				</div> <!-- /.modal-content -->
+			</div> <!-- /.modal-dialog -->
+		</div> <!-- /.modal -->
 		
 		<div class="modal fade" id="reloadConfigPopup" tabindex="-1" role="dialog" aria-labelledby="reloadConfigPopup" aria-hidden="true">
 			<div class="modal-dialog">
@@ -28,7 +49,7 @@
 						<button type="button" class="close" data-dismiss="modal"  data-target="#reloadConfigPopup" aria-label="Close">
 							<span aria-hidden="true">&times;</span>
 						</button>
-						<h4 class="modal-title">Reload Night-Watch configuration files</h4>
+						<h4 class="modal-title">Reload Night-Watch configuration files?</h4>
 					</div>
 					<div class="modal-body">
     					<p>Night-Watch will reload all its configuration files and won't monitor anymore while it's reloading (for a few seconds).</p>
