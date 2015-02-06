@@ -59,12 +59,13 @@ if __name__ == "__main__":
     Log.reconfigure(config.logging)
 
     # Start TaskManager
-    TaskManager.getTaskManager().start()
+    nw_taskmanager = TaskManager.TaskManager()
+    nw_taskmanager.start()
     
     # Start WebServer if it is enabled in config file, otherwise enter in while loop
     if config.is_webserver_enabled:
         from nw.webserver import WebServer
-        nw_server = WebServer.Webserver()
+        nw_server = WebServer.Webserver(nw_taskmanager)
         nw_server.start()
 
     else:

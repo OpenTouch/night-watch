@@ -70,9 +70,23 @@ class Scheduler:
         getLogger(__name__).info('Start scheduler')
 
 
-    def stop(self):
-        self.scheduler.shutdown()
+    def stop(self, wait=True):
+        self.scheduler.shutdown(wait)
         getLogger(__name__).info('Stop scheduler')
+
+
+    def removeJob(self, job_name):
+        # Check that the job with job_name well exist
+        if not(self.jobs.has_key(job_name)):
+            raise Exception ('Job named "' + job_name + '" can not be removed because it is not registered in scheduler')
+        getLogger(__name__).debug('Remove job "' + job_name +'" from scheduler')
+        self.jobs.get(job_name).remove()
+        self.jobs.pop(job_name)
+        
+    def removeAllJobs(self):
+        getLogger(__name__).debug('Remove all jobs from scheduler')
+        for job_name in self.jobs.iterkeys():
+            self.removeJob(job_name)
 
 
     def _getTrigger(self, policy):

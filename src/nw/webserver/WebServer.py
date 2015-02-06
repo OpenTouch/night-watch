@@ -24,16 +24,20 @@ from nw.webserver.api import Api
 from nw.core import NwConfiguration
 
 class Webserver:
-    def __init__(self):
-        _tornado_webserver = None
+    def __init__(self, task_manager):
+        self._nw_task_manager = task_manager
+        self._tornado_webserver = None
         
     def make_app(self):
         return Application(
             handlers = [
                 url(r"/", RedirectHandler,dict(url=r"/index.html")),
-                url(r"/index.html", Web.MainHandler),
-                url(r"/status.html", Web.StatusHandler),
-                url(r"/task.html", Web.TaskHandler),
+                url(r"/index.html", Web.MainHandler, dict(nw_task_manager=self._nw_task_manager)),
+                url(r"/status.html", Web.StatusHandler, dict(nw_task_manager=self._nw_task_manager)),
+                url(r"/task.html", Web.TaskHandler, dict(nw_task_manager=self._nw_task_manager)),
+                url(r"/api/v1/tasks", Api.TasksHandler, dict(nw_task_manager=self._nw_task_manager)),
+                url(r"/api/v1/tasks/(?P<task_name>[^/]+)", Api.TasksHandler, dict(nw_task_manager=self._nw_task_manager)),
+                url(r"/api/v1/tasks/(?P<task_name>[^/]+)/(?P<action>[^/]+)", Api.TasksHandler, dict(nw_task_manager=self._nw_task_manager)),
             ],
             template_path = os.path.join(os.path.dirname(__file__), "web/templates"),
             static_path = os.path.join(os.path.dirname(__file__), "web/static"),

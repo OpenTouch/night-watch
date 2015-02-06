@@ -18,7 +18,6 @@ import operator
 
 from nw.core import ProvidersManager
 from nw.core import ActionsManager
-import nw.core
 
 # List of supported conditions
 _operator_dict = {
@@ -33,8 +32,12 @@ _operator_dict = {
                   }
 
 class Task():
-    
-    def __init__(self, name, period_success, period_retry, period_failed, retries, providers, actions_failed, actions_success):
+    """
+    Constructor
+    """
+    def __init__(self, nw_task_manager, name, period_success, period_retry, period_failed, retries, providers, actions_failed, actions_success):
+        self._nw_task_manager = nw_task_manager
+        
         self.name = name
         
         if period_success is None:
@@ -61,7 +64,7 @@ class Task():
         self._remaining_retries = self.retries
         
         if providers is None:
-            raise ValueError('Mandatory parameter providers is not provided to task "' + name + '"')
+            raise ValueError('Mandatory parameter providers is not provided to task "' + self.name + '"')
         self.providers = []
         self.provider_names = []
         self.provider_conditions = []
@@ -89,28 +92,9 @@ class Task():
         # Boolean used to know if the task is enabled or not (i.e. job is running or paused in scheduler)
         self._task_enabled = True
 
-    def _loadActions(self, actions_loaded, actions):
-        for action_name, action_options in actions.iteritems():
-            a = ActionsManager.getActionClass(action_name)
-            actions_loaded.append(a(action_options))
-
-    def _loadProviders(self, providers_loaded, providers):
-        for provider in providers:
-            for provider_name, provider_options in provider.iteritems():
-                self.provider_names.append(provider_name)
-                condition = provider_options.get('condition')
-                if condition is None:
-                    raise ValueError('Mandatory parameter condition is not provided to task "' + self.name + '"')
-                if not _operator_dict.has_key(condition):
-                    raise ValueError('Parameter condition "' + condition + '" provided to task "' + self.name + '" is not allowed. Allowed conditions are: ' + str(_operator_dict.keys()))
-                self.provider_conditions.append(condition)
-                threshold = provider_options.get('threshold')
-                if threshold is None:
-                    raise ValueError('Mandatory parameter threshold is not provided to task "' + self.name + '"')
-                self.provider_thresholds.append(threshold)
-                p = ProvidersManager.getProviderClass(provider_name)
-                providers_loaded.append(p(provider_options.get('provider_options')))
-
+    """
+    Public methods
+    """
     def run(self):
         self.numberOfProvidersFailed = 0
         i = 0
@@ -165,18 +149,29 @@ class Task():
     def disableTask(self):
         if self._task_enabled:
             getLogger(__name__).debug('Disable task "' + self.name + '".')
-            nw.core.TaskManager.getTaskManager().pauseTask(self)
             self._task_enabled = False
+            return True
         else:
             getLogger(__name__).warning('Tried to disable task "' + self.name + '" but it is already disabled.')
+            return False
             
     def enableTask(self):
         if not self._task_enabled:
-            getLogger(__name__).info('Enable task "' + self.name + '".')
-            nw.core.TaskManager.getTaskManager().resumeTask(self)
+            getLogger(__name__).debug('Enable task "' + self.name + '".')
             self._task_enabled = True
+            return True
         else:
             getLogger(__name__).warning('Tried to enable task "' + self.name + '" but it is already enabled.')
+            return False
+                    
+    def updateTaskPeriod(self, new_period):
+        if new_period != self.period:
+            getLogger(__name__).debug('Update task period from ' + str(self.period) + ' to ' + str(new_period) + ' for task ' + self.name)
+            self.period = new_period
+            return True
+        else:
+            getLogger(__name__).warning('Tried to update task "' + self.name + '" to period ' + str(new_period) + ' but period is already ' + str(self.period) + '.')
+            return False
             
     def toDict(self):
         return {
@@ -196,7 +191,33 @@ class Task():
                 "    - remaining_retries: {remaining_retries}\n" +\
                 "    - is_failed: {task_failed}"
                 ).format(task_name=self.name, enabled=self._task_enabled, period=self.period, retries=self.retries, remaining_retries=self._remaining_retries, task_failed=self._task_failed)
-                    
+    
+    
+    """
+    Private methods
+    """
+    def _loadActions(self, actions_loaded, actions):
+        for action_name, action_options in actions.iteritems():
+            a = ActionsManager.getActionClass(action_name)
+            actions_loaded.append(a(action_options))
+
+    def _loadProviders(self, providers_loaded, providers):
+        for provider in providers:
+            for provider_name, provider_options in provider.iteritems():
+                self.provider_names.append(provider_name)
+                condition = provider_options.get('condition')
+                if condition is None:
+                    raise ValueError('Mandatory parameter condition is not provided to task "' + self.name + '"')
+                if not _operator_dict.has_key(condition):
+                    raise ValueError('Parameter condition "' + condition + '" provided to task "' + self.name + '" is not allowed. Allowed conditions are: ' + str(_operator_dict.keys()))
+                self.provider_conditions.append(condition)
+                threshold = provider_options.get('threshold')
+                if threshold is None:
+                    raise ValueError('Mandatory parameter threshold is not provided to task "' + self.name + '"')
+                self.provider_thresholds.append(threshold)
+                p = ProvidersManager.getProviderClass(provider_name)
+                providers_loaded.append(p(provider_options.get('provider_options')))
+                
     def _makeAction(self, actions_to_do, log_message, state, conditions, thresholds, values):
         if (actions_to_do):
             for action in actions_to_do:
@@ -225,6 +246,6 @@ class Task():
                     
     def _updateTaskPeriod(self, new_period):
         if new_period != self.period:
-            getLogger(__name__).info('Update task period from ' + self.period + ' to ' + new_period)
-            self.period = new_period
-            nw.core.TaskManager.getTaskManager().updateTaskPeriod(self)
+            self._nw_task_manager.updateTaskPeriod(self.name, new_period)
+        else:
+            getLogger(__name__).warning('Tried to update task "' + self.name + '" to period ' + str(new_period) + ' but period is already ' + str(self.period) + '.')
