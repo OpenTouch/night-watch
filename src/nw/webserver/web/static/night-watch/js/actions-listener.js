@@ -81,7 +81,7 @@ $("#confirm-disable-monitoring-button").click(function () {
 
 $("#confirm-reload-config-button").click(function () {
 	$('#reloadConfigPopup').modal('hide');
-	$('#reload-config-button').prop('disabled', true);
+	$('#reload-config-button').prop('disabled', true).html('<span class="glyphicon glyphicon-refresh spinning"></span> Reloading Night-Watch...');
 	/*
 	// TODO: call an API for reloading Night-Watch's config files
 	// Display a spinner / progress bar
@@ -91,14 +91,14 @@ $("#confirm-reload-config-button").click(function () {
 		url: "/api/v1/night-watch/reload",
 		success: function (data) {
 			$('#addContactPopup').modal('hide');
-			$('#reload-config-button').prop('disabled', false);
+			$('#reload-config-button').prop('disabled', false).html("Reload config files");
 		},
 		error: function(data) {
 			// Display error popup
 			$('#informativePopup').find(".modal-title").html("Failed to reload Night-Watch");
 			$('#informativePopup').find(".modal-body").html("The following error occurred while reloading Night-Watch: <pre>" + (data.responseJSON.error_msg ? data.responseJSON.error_msg : data.responseText) + "</pre>");
 			$('#informativePopup').modal('show');
-			$('#reload-config-button').prop('disabled', false);
+			$('#reload-config-button').prop('disabled', false).html("Reload config files");
 		} 
    }); 
 });

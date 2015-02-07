@@ -23,7 +23,8 @@ class MainHandler(RequestHandler):
         self._nw_task_manager = nw_task_manager
         
     def get(self):
-        self.render("index.html", 
+        self.render("index.html",
+                    TasksManager = self._nw_task_manager, 
                     Tasks = self._nw_task_manager.getTasks())
 
 class StatusHandler(RequestHandler):

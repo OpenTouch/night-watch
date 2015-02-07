@@ -12,12 +12,12 @@
 			<div class="col-md-4">
 				<h4>Monitoring</h4>
 				<div id="btn-monitoring" class="btn-group btn-toggle"> 
-					<button id="btn-monitoring-on" class="btn btn-on btn-success active" disabled>On</button>
-					<button id="btn-monitoring-off" class="btn btn-off btn-default" data-toggle="modal" data-target="#disableMonitoringPopup">Off</button>
+					<button id="btn-monitoring-on" class="btn btn-on {% if TasksManager.isRunning() %}btn-success active{% else %}btn-default{% end %}" {% if TasksManager.isRunning() %}disabled{% end %}>On</button>
+					<button id="btn-monitoring-off" class="btn btn-off {% if not TasksManager.isRunning() %}btn-danger active{% else %}btn-default{% end %}" data-toggle="modal" data-target="#disableMonitoringPopup" {% if not TasksManager.isRunning() %}disabled{% end %}>Off</button>
 				</div>
 			
 				<h4>Reload</h4>
-				<button id="reload-config-button" type="button" class="btn btn-warning" data-toggle="modal" data-target="#reloadConfigPopup">Reload config files</button>
+				<button id="reload-config-button" type="button" class="btn btn-warning" data-toggle="modal" data-target="#reloadConfigPopup" {% if (not TasksManager.isRunning()) or TasksManager.isReloading() %}disabled{% end %}>{% if TasksManager.isReloading() %}<span class="glyphicon glyphicon-refresh spinning"></span> Reloading Night-Watch...{% else %}Reload config files{% end %}</button>
 			</div>
 		</div>
 		

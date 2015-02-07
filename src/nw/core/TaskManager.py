@@ -30,11 +30,14 @@ class TaskManager:
         self.tasks = {}
         self._scheduler = None
         self._started = False
+        self._reloading = False
         
     """
     Public methods
     """
     def start(self):
+        if self.isRunning():
+            raise Exception ("TaskManager is already running")
         # Load tasks from the config files located in the config task folder
         if not self.tasks:
             self._loadTasks()
@@ -46,23 +49,38 @@ class TaskManager:
         
     def reload(self):
         getLogger(__name__).info('Reloading TaskManager...')
+        if not self.isRunning():
+            raise Exception ("TaskManager is not running, can't reload")
+        if self.isReloading():
+            raise Exception ("TaskManager is already reloading...")
+        # Reload TaskManager
+        self._reloading = True
         if self._scheduler:
             self._scheduler.removeAllJobs()
         self.tasks.clear()
         ProvidersManager.clearProviderConfig()
         ActionsManager.clearActionConfig()
         self.start()
+        self._reloading = False
         getLogger(__name__).info('TaskManager reloaded')
     
     def stop(self, wait=True):
+        if self._scheduler == None:
+            raise Exception ("Scheduler is not defined, can't stop TaskManager")
+        if not self.isRunning():
+            raise Exception ("TaskManager is already stopped")
+        if self.isReloading():
+            raise Exception ("TaskManager is reloading, can't stop during reload")
         # Stop the scheduler
-        if self._scheduler != None and self._started:
-            self._scheduler.stop(wait)
-            self._started = False
-            getLogger(__name__).info('TaskManager stopped')
+        self._scheduler.stop(wait)
+        self._started = False
+        getLogger(__name__).info('TaskManager stopped')
             
     def isRunning(self):
         return self._started
+            
+    def isReloading(self):
+        return self._reloading
     
 
     def getTasks(self):

@@ -27,7 +27,12 @@ class NightWatchHandler(RequestHandler):
 
     def get(self, action):
         if action == 'status':
-            status = "Running" if self._nw_task_manager else "Stopped"
+            if self._nw_task_manager.isReloading():
+                status = "Reloading" 
+            elif self._nw_task_manager.isRunning():
+                status = "Running"
+            else:
+                status = "Stopped"
             self.write(json.dumps({'status':status}))
         else:
             self.set_status(501)
