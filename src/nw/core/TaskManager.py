@@ -56,7 +56,7 @@ class TaskManager:
     
     def stop(self, wait=True):
         # Stop the scheduler
-        if self._scheduler != None:
+        if self._scheduler != None and self._started:
             self._scheduler.stop(wait)
             self._started = False
             getLogger(__name__).info('TaskManager stopped')

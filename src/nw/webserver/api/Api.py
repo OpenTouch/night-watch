@@ -22,30 +22,34 @@ from tornado.web import RequestHandler
 class NightWatchHandler(RequestHandler):
     def initialize(self, nw_task_manager):
         self._nw_task_manager = nw_task_manager
+        self.set_header('Content-Type', 'application/json'); 
         getLogger(__name__).info('Received request {method} {path}'.format(method=self.request.method, path=self.request.path))
 
     def get(self, action):
         if action == 'status':
             status = "Running" if self._nw_task_manager else "Stopped"
-            self.write({'status':status})
+            self.write(json.dumps({'status':status}))
         else:
             self.set_status(501)
-            self.write({"error_msg":"Action {} is not allowed. Allowed actions: status".format(action)})
+            self.write(json.dumps({"error_msg":"Action {} is not allowed. Allowed actions: status".format(action)}))
 
     def put(self, action):
-        if action == 'pause':
-            self._nw_task_manager.stop()
-            return self.get('status')
-        elif action == 'resume':
-            self._nw_task_manager.start()
-            return self.get('status')
-        elif action == 'reload':
-            self._nw_task_manager.reload()
-            self.write({'status':'reloaded'})
-        else:
-            self.set_status(501)
-            self.write({"error_msg":"Action {} is not allowed. Allowed actions: pause | resume | reload".format(action)})
-
+        try:
+            if action == 'pause':
+                self._nw_task_manager.stop()
+                return self.get('status')
+            elif action == 'resume':
+                self._nw_task_manager.start()
+                return self.get('status')
+            elif action == 'reload':
+                self._nw_task_manager.reload()
+                self.write(json.dumps({'status':'reloaded'}))
+            else:
+                self.set_status(501)
+                self.write(json.dumps({"error_msg":"Action {} is not allowed. Allowed actions: pause | resume | reload".format(action)}))
+        except Exception, e:
+            self.set_status(500)
+            self.write(json.dumps({"error_msg":e.message}))
 
 class TasksHandler(RequestHandler):
     def initialize(self, nw_task_manager):

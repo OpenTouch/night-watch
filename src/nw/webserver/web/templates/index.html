@@ -12,7 +12,7 @@
 			<div class="col-md-4">
 				<h4>Monitoring</h4>
 				<div id="btn-monitoring" class="btn-group btn-toggle"> 
-					<button id="btn-monitoring-on" class="btn btn-on btn-success active">On</button>
+					<button id="btn-monitoring-on" class="btn btn-on btn-success active" disabled>On</button>
 					<button id="btn-monitoring-off" class="btn btn-off btn-default" data-toggle="modal" data-target="#disableMonitoringPopup">Off</button>
 				</div>
 			
@@ -34,7 +34,7 @@
     					<p>Night-Watch will stop monitoring.</p>
     					<p>Are you sure you want to proceed?</p>
 						<form role="form">
-							<button id="confirm-diable-monitoring-button" type="button" class="btn btn-on btn-warning">Yes</button>
+							<button id="confirm-disable-monitoring-button" type="button" class="btn btn-on btn-warning">Yes</button>
 							<button type="button" class="btn btn-default" data-dismiss="modal">No</button>
 						</form>
 					</div> <!-- /.modal-body -->
@@ -58,6 +58,24 @@
 							<button id="confirm-reload-config-button" type="button" class="btn btn-on btn-warning">Yes</button>
 							<button type="button" class="btn btn-default" data-dismiss="modal">No</button>
 						</form>
+					</div> <!-- /.modal-body -->
+				</div> <!-- /.modal-content -->
+			</div> <!-- /.modal-dialog -->
+		</div> <!-- /.modal -->
+		
+		<div class="modal fade" id="informativePopup" tabindex="-1" role="dialog" aria-labelledby="informativePopup" aria-hidden="true">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal"  data-target="#informativePopup" aria-label="Close">
+							<span aria-hidden="true">&times;</span>
+						</button>
+						<h4 class="modal-title"></h4>
+					</div>
+					<div class="modal-body">
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
 					</div> <!-- /.modal-body -->
 				</div> <!-- /.modal-content -->
 			</div> <!-- /.modal-dialog -->
