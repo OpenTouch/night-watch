@@ -74,3 +74,22 @@ class TasksHandler(RequestHandler):
             for task_name, task in self._nw_task_manager.getTasks().iteritems():
                 tasks.append(task.toDict())
             self.write(json.dumps(tasks))
+            
+    def put(self, task_name, action):
+        try:
+            if action == 'pause':
+                self._nw_task_manager.pauseTask(task_name)
+                self.write(json.dumps(self._nw_task_manager.getTask(task_name).toDict()))
+            elif action == 'resume':
+                self._nw_task_manager.resumeTask(task_name)
+                self.write(json.dumps(self._nw_task_manager.getTask(task_name).toDict()))
+            #TODO: implement reload Task
+            #elif action == 'reload':
+            #    self._nw_task_manager.reloadTask(task_name)
+            #    self.write(json.dumps(self._nw_task_manager.getTask(task_name).toDict()))
+            else:
+                self.set_status(501)
+                self.write(json.dumps({"error_msg":"Action {} is not allowed. Allowed actions: pause | resume | reload".format(action)}))
+        except Exception, e:
+            self.set_status(500)
+            self.write(json.dumps({"error_msg":e.message}))

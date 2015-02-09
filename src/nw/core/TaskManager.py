@@ -92,55 +92,49 @@ class TaskManager:
     
     def pauseTask(self, task_name):
         task = self.tasks.get(task_name, None)
-        if task:
-            # Update _task_enabled value in Task object
-            task_updated = task.disableTask()
-            if task_updated:
-                # Pause the task in scheduler
-                getLogger(__name__).info('Pause task "' + task.name)
-                self._scheduler.pauseJob(task.name)
-                return True
-            else:
-                getLogger(__name__).warning('Not able to pause task "' + task.name)
-                return False
+        if not task:
+            getLogger(__name__).warning('Not able to pause task "{}", task is not found.'.format(task_name))
+            raise Exception ('Not able to pause task "{}", task is not found.'.format(task_name))
+        # Update _task_enabled value in Task object
+        task_updated = task.disableTask()
+        if task_updated:
+            # Pause the task in scheduler
+            getLogger(__name__).info('Pause task "{}"'.format(task.name))
+            self._scheduler.pauseJob(task.name)
         else:
-            getLogger(__name__).warning('Not able to pause task "' + task_name + '" , task is not found.')
-            return False
+            getLogger(__name__).warning('Not able to pause task "{}"'.format(task.name))
+            raise Exception ('Not able to pause task "' + task.name)
     
     def resumeTask(self, task_name):
         task = self.tasks.get(task_name, None)
-        if task:
-            # Update _task_enabled value in Task object
-            task_updated = task.enableTask()
-            if task_updated:
-                # Resume the task in scheduler
-                getLogger(__name__).info('Resume task "' + task.name)
-                self._scheduler.resumeJob(task.name)
-                return True
-            else:
-                getLogger(__name__).warning('Not able to resume task "' + task.name)
-                return False
+        if not task:
+            getLogger(__name__).warning('Not able to resume task "{}", task is not found.'.format(task_name))
+            raise Exception ('Not able to resume task "{}", task is not found.'.format(task_name))
+        # Update _task_enabled value in Task object
+        task_updated = task.enableTask()
+        if task_updated:
+            # Resume the task in scheduler
+            getLogger(__name__).info('Resume task "{}"'.format(task.name))
+            self._scheduler.resumeJob(task.name)
         else:
-            getLogger(__name__).warning('Not able to resume task "' + task_name + '" , task is not found.')
-            return False
+            getLogger(__name__).warning('Not able to resume "{}"'.format(task.name))
+            raise Exception ('Not able to resume "{}"'.format(task.name))
     
     def updateTaskPeriod(self, task_name, new_period):
         task = self.tasks.get(task_name, None)
-        if task:
-            # Update task period value in Task object
-            task_updated = task.updateTaskPeriod(new_period)
-            if task_updated:
-                # Change the task periodicity in scheduler
-                getLogger(__name__).info('Reschedule task "' + task.name + '" to period ' + task.period)
-                # Update scheduler job so that it redefines periodicity of calls to task.run for task task.name
-                self._scheduler.rescheduleJob(task.period, task.name)
-                return True
-            else:
-                getLogger(__name__).warning('Not able to reschedule task "' + task.name + '" to period ' + new_period)
-                return False
+        if not task:
+            getLogger(__name__).warning('Not able to reschedule task "{}", task is not found.'.format(task_name))
+            raise Exception ('Not able to reschedule task "{}", task is not found.'.format(task_name))
+        # Update task period value in Task object
+        task_updated = task.updateTaskPeriod(new_period)
+        if task_updated:
+            # Change the task periodicity in scheduler
+            getLogger(__name__).info('Reschedule task "' + task.name + '" to period ' + str(task.period))
+            # Update scheduler job so that it redefines periodicity of calls to task.run for task task.name
+            self._scheduler.rescheduleJob(task.period, task.name)
         else:
-            getLogger(__name__).warning('Not able to reschedule task "' + task_name + '" to period ' + new_period + ', task is not found.')
-            return False
+            getLogger(__name__).warning('Not able to reschedule task "' + task.name + '" to period ' + str(new_period))
+            raise Exception ('Not able to reschedule task "' + task.name + '" to period ' + str(new_period))
             
     
     """
