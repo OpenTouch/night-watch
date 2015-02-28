@@ -10,6 +10,8 @@
 {% end %}
 
 {% block content %}
+	{% module TasksTable(Tasks) %}
+
 	{% set i = 0 %}
 	{% for task_name, task in sorted(Tasks.iteritems()) %}
 		{% set i += 1 %}
@@ -29,7 +31,7 @@
 						<a href="task.html?task_name={{ url_escape(task_name) }}">Detail</a>
 					</div>
 					<div class="panel-body">
-						{% module Task(task) %}
+						{% module TaskList(task) %}
 					</div>
 				</div>
 			</div>

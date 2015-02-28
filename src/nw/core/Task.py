@@ -166,6 +166,9 @@ class Task():
             
     def isEnabled(self):
         return self._task_enabled
+            
+    def isSuccess(self):
+        return not self._task_failed
                     
     def updateTaskPeriod(self, new_period):
         if new_period != self.period:

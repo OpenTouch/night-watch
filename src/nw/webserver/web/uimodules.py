@@ -15,7 +15,17 @@
 
 from tornado.web import UIModule
 
-class Task(UIModule):
+class TasksTable(UIModule):
+    def render(self, tasks):
+        return self.render_string(
+            "uitemplates/tasks-table.html", tasks=tasks)
+
+class TaskTableItem(UIModule):
+    def render(self, task):
+        return self.render_string(
+            "uitemplates/task-table-item.html", task=task)
+
+class TaskList(UIModule):
     def render(self, task, show_config = False):
         return self.render_string(
-            "uitemplates/module-task.html", task=task, show_config=show_config)
+            "uitemplates/task-list.html", task=task, show_config=show_config)

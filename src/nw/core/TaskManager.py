@@ -38,13 +38,10 @@ class TaskManager:
     def start(self):
         if self.isRunning():
             raise Exception ("TaskManager is already running")
-        # Load tasks from the config files located in the config task folder
-        if not self.tasks:
-            self._loadTasks()
-            self._scheduleTasks()
-        if not self._started:
-            self._scheduler.start()
-            self._started = True
+        # Load tasks from the config files if not already loaded
+        self._init()
+        self._scheduler.start()
+        self._started = True
         getLogger(__name__).info('TaskManager started')
         
     def reload(self):
@@ -60,7 +57,7 @@ class TaskManager:
         self.tasks.clear()
         ProvidersManager.clearProviderConfig()
         ActionsManager.clearActionConfig()
-        self.start()
+        self._init()
         self._reloading = False
         getLogger(__name__).info('TaskManager reloaded')
     
@@ -139,7 +136,14 @@ class TaskManager:
     
     """
     Private methods
-    """ 
+    """     
+    def _init(self):
+        # Load tasks from the config files located in the config task folder
+        if not self.tasks:
+            self._loadTasks()
+            self._scheduleTasks()
+        getLogger(__name__).info('Tasks loaded')
+        
     def _loadTasks(self):
         getLogger(__name__).debug('Loading tasks...')
         tasks_location = getNwConfiguration().tasks_location
