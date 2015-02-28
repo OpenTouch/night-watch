@@ -12,6 +12,7 @@
 {% block content %}
 	{% module TasksTable(Tasks) %}
 
+	{# old display using panels
 	{% set i = 0 %}
 	{% for task_name, task in sorted(Tasks.iteritems()) %}
 		{% set i += 1 %}
@@ -40,4 +41,5 @@
 		{% end %}
 		{% end %}
 		</div>
+		#}
 {% end %}
