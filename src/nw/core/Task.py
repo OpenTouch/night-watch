@@ -18,6 +18,7 @@ import operator
 
 from nw.core import ProvidersManager
 from nw.core import ActionsManager
+from nw.core.NwExceptions import TaskConfigInvalid
 
 # List of supported conditions
 _operator_dict = {
@@ -35,57 +36,62 @@ class Task():
     """
     Constructor
     """
-    def __init__(self, nw_task_manager, name, period_success, period_retry, period_failed, retries, providers, actions_failed, actions_success):
+    #def __init__(self, nw_task_manager, name, period_success, period_retry, period_failed, retries, providers, actions_failed, actions_success):
+    def __init__(self, name, nw_task_manager, config, from_filename):
         self._nw_task_manager = nw_task_manager
+        
+        self.yaml_config = config
+        self.from_yaml_filename = from_filename
         
         self.name = name
         
-        if period_success is None:
-            raise ValueError('Mandatory parameter period_success is not provided to task "' + name + '"')
-        self.period_success = period_success
+        # Number of retries before performing the actions
+        self.retries = self.yaml_config.get('retries')
+        if self.retries is None:
+            getLogger(__name__).info('No retries parameter defined for Task "{}", do not use retries (action(s) are perform as soon as the task fails)'.format(self.name))
+            self.retries = 0
+
+        # Define the number of remaining retries to the number of retries allowed for this task
+        self._remaining_retries = self.retries
+                             
+        self.period_success = self.yaml_config.get('period_success')
+        if self.period_success is None:
+            raise TaskConfigInvalid('Mandatory parameter period_success is not provided to task "{}"'.format(self.name))
         
-        if retries is not None and period_retry is None:
-            raise ValueError('Mandatory parameter period_retry is not provided to task "' + name + '"')
-        self.period_retry = period_retry
+        self.period_retry = self.yaml_config.get('period_retry')
+        if self.retries > 0 and self.period_retry is None:
+            raise TaskConfigInvalid('Mandatory parameter period_retry is not provided to task "{}"'.format(self.name))
         
-        if period_failed is None:
-            raise ValueError('Mandatory parameter period_failed is not provided to task "' + name + '"')
-        self.period_failed = period_failed
+        self.period_failed = self.yaml_config.get('period_failed')
+        if self.period_failed is None:
+            raise TaskConfigInvalid('Mandatory parameter period_failed is not provided to task "{}"'.format(self.name))
         
         # Define the task period to period_success at init
-        self.period = period_success
+        self.period = self.period_success
         
-        # Number of retries before performing the actions
-        if retries is None:
-            getLogger(__name__).info('No retries parameter defined for Task "' + self.name + '", do not use retries (action(s) are perform as soon as the task fails)')
-            self.retries = 0
-        else:
-            self.retries = retries
-        self._remaining_retries = self.retries
-        
-        if providers is None:
-            raise ValueError('Mandatory parameter providers is not provided to task "' + self.name + '"')
+        if self.yaml_config.get('providers') is None:
+            raise TaskConfigInvalid('Mandatory parameter providers is not provided to task "{}"'.format(self.name))
         self.providers = []
         self.provider_names = []
         self.provider_conditions = []
         self.provider_thresholds = []
         self.provider_values = []
-        self._loadProviders(self.providers, providers)
+        self._loadProviders(self.providers, self.yaml_config.get('providers'))
         self.numberOfProvidersFailed = 0
         self.numberOfProviders = len(self.providers)
         getLogger(__name__).info('Number of providers:' + str(self.numberOfProviders))
 
         self.actions_failed = []
-        if actions_failed and type(actions_failed) is dict:
-            self._loadActions(self.actions_failed, actions_failed)
+        if self.yaml_config.get('actions_failed') and type(self.yaml_config.get('actions_failed')) is dict:
+            self._loadActions(self.actions_failed, self.yaml_config.get('actions_failed'))
         else:
-            getLogger(__name__).warning('No action(s) defined for Task "' + self.name + '" if this task failed.')
+            getLogger(__name__).warning('No action(s) defined for Task "{}" if this task failed.'.format(self.name))
 
         self.actions_success = []
-        if actions_success and type(actions_success) is dict:
-            self._loadActions(self.actions_success, actions_success)
+        if self.yaml_config.get('actions_success') and type(self.yaml_config.get('actions_success')) is dict:
+            self._loadActions(self.actions_success, self.yaml_config.get('actions_success'))
         else:
-            getLogger(__name__).warning('No action(s) defined for Task "' + self.name + '" if this task back to normal.')
+            getLogger(__name__).warning('No action(s) defined for Task "{}" if this task back to normal.'.format(self.name))
             
         # Boolean used to know if the task already failed in the previous iteration (allows to perform actions only the first time the issue failed)
         self._task_failed = False
@@ -187,6 +193,11 @@ class Task():
                 'retries': self.retries,
                 'remaining_retries': self._remaining_retries,
                 'is_failed': self._task_failed
+                }
+            
+    def toYamlDict(self):
+        return {
+                self.name: self.yaml_config
                 }
             
     def __str__(self):

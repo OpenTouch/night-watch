@@ -13,23 +13,14 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import yaml
+class TaskFileIOError(Exception):
+    pass
 
-def str2num(s):
-    try:
-        return int(s)
-    except ValueError:
-        return float(s)
-    
-def str2bool(s):    
-    return s.lower() in ("true", "yes")
-    
-def isYamlFile(f):    
-    return f.endswith(".yml") or f.endswith(".yaml")
+class TaskNotFound(Exception):
+    pass
 
-def loadYamlFile(f):
-    if isYamlFile(f):
-        with open(f, "r") as yml:
-            return yaml.load(yml)
-    else:
-        raise Exception('The file "{}" is not a yaml file.'.format(f))
+class TaskFileInvalid(Exception):
+    pass
+
+class TaskConfigInvalid(Exception):
+    pass

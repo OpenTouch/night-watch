@@ -17,10 +17,10 @@ import os, sys, time
 from logging import getLogger
 
 from nw.core.Task import Task
-from nw.core.NwConfiguration import getNwConfiguration
+from nw.core.TaskLoader import TaskLoader
 from nw.core.Scheduler import Scheduler
 from nw.core import ActionsManager, ProvidersManager
-from nw.core.Utils import isYamlFile, loadYamlFile
+from nw.core.NwExceptions import TaskFileIOError, TaskNotFound, TaskFileInvalid
 
 class TaskManager:
     """
@@ -28,7 +28,8 @@ class TaskManager:
     """
     def __init__(self):
         self.tasks = {}
-        self._scheduler = None
+        self._task_loader = TaskLoader()
+        self._scheduler = Scheduler()
         self._started = False
         self._reloading = False
         
@@ -140,61 +141,28 @@ class TaskManager:
     def _init(self):
         # Load tasks from the config files located in the config task folder
         if not self.tasks:
-            self._loadTasks()
+            self._loadAllTasks()
             self._scheduleTasks()
         getLogger(__name__).info('Tasks loaded')
         
-    def _loadTasks(self):
+    def _loadAllTasks(self):
         getLogger(__name__).debug('Loading tasks...')
-        tasks_location = getNwConfiguration().tasks_location
-        
-        tasks_files = []
-        try:
-            for f in os.listdir(tasks_location):
-                if os.path.isfile(os.path.join(tasks_location,f)) and isYamlFile(f):
-                    tasks_files.append(f)
-        except Exception, e:
-            getLogger(__name__).critical('The directory ' + tasks_location + ' is not reachable', exc_info=True)
-            exit(-1)
-        
-        getLogger(__name__).debug('List of task config files to load: ' + str(tasks_files))
-        # Load all the tasks' config files
-        for task_file in tasks_files:
-            try:
-                getLogger(__name__).info('Load task config file from ' + task_file)
-                config = loadYamlFile(os.path.join(tasks_location,task_file))
-            except Exception, e:
-                getLogger(__name__).critical('Could not read task config file from ' + task_file + '. Reason is: ' + e.message, exc_info=True)
-                exit(-1)
-                
-            # Instantiate a Task for every task in the current task config file
-            for task_name, task in config.iteritems():
-                getLogger(__name__).debug('Load task "' + task_name + '"')
-                try:
-                    t = Task(nw_task_manager = self,
-                             name = task_name,
-                             period_success = task.get('period_success'),
-                             period_retry = task.get('period_retry'),
-                             period_failed = task.get('period_failed'),
-                             retries = task.get('retries'), 
-                             providers = task.get('providers'),
-                             actions_failed = task.get('actions_failed'),
-                             actions_success = task.get('actions_success'))
-                    
-                    if self.tasks.has_key(t.name)   :
-                        getLogger(__name__).warning('A task named "' + task_name + '" has already been loaded and is overwritten by the task from task config file ' + task_file)
-                    self.tasks[t.name] = t
-                # TODO: add a better error management (specific errors for invalid configuration, missing required parameters, provider/action initialization problem,...)
-                except Exception, e:
-                    # TBD: Exit program with critical error or execute the successfully loaded tasks anyway?
-                    getLogger(__name__).critical('Could not load task "' + task_name + '" from task config file ' + task_file + '. Reason is: ' + str(e.message), exc_info=True)
-                    sys.exit(2)
+        tasks_config_files = self._task_loader.loadAllTasks()
+        # Instantiate a Task for every task in the current task config file
+        for tasks_filename, tasks_config in tasks_config_files.iteritems():
+            for task_name, task_config in tasks_config.iteritems():
+                getLogger(__name__).debug('Instantiate task "{}"'.format(task_name))
+                t = Task(nw_task_manager = self,
+                         name = task_name,
+                         config = task_config,
+                         from_filename = tasks_filename)
+                if self.tasks.has_key(t.name)   :
+                    getLogger(__name__).warning('A task named "{}" has already been loaded and is overwritten by the task from task config file '.format(task_name, tasks_filename))
+                self.tasks[t.name] = t
         getLogger(__name__).debug('Tasks loaded')
                         
     def _scheduleTasks(self):
         getLogger(__name__).debug('Scheduling tasks...')
-        if not self._scheduler:
-            self._scheduler = Scheduler()
         for key, task in self.tasks.iteritems():
             getLogger(__name__).info('Schedule task "' + key + '"')
             # Add job to the scheduler so that it calls task.run every task.period
