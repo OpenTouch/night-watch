@@ -1,0 +1,15 @@
+<tr id="task_{{task.name}}" class="{% if task.isEnabled() == False %}warning{% elif task.isSuccess() == False %}danger{% elif task.isSuccess() == True %}success{% end %}">
+	<td class="task_name">{{task.name}}</td>
+    <td class="task_status">{% if task.isSuccess() == True %}Success{% else %}Fail{% end %}</td>
+    <td class="task_period">{{task.period}}</td>
+    <td class="task_retries">{{task._remaining_retries}} ({{task.retries}})</td>
+    <td class="task_enabled">
+		<div id="btn-task-enable" class="btn-group btn-toggle"> 
+			<button id="btn-task-{{task.name}}" data-task="{{task.name}}" class="btn btn-xs btn-on {% if task.isEnabled() %}btn-success active{% else %}btn-default{% end %}">On</button>
+			<button id="btn-monitoring-off" class="btn btn-xs btn-off {% if not task.isEnabled() %}btn-danger active{% else %}btn-default{% end %}">Off</button>
+		</div>
+	</td>
+    <td class="task_actions">
+    	<a href="task.html?task_name={{ url_escape(task.name) }}"><span class="glyphicon glyphicon-list-alt task-details-link" title="Show details of task {{ task.name }}"></span></a>
+    </td>
+</tr>

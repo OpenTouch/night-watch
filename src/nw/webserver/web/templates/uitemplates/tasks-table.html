@@ -1,0 +1,17 @@
+<table class="table table-bordered" data-toggle="table" data-height="299" data-sort-name="task_name" data-sort-order="desc" data-show-columns="true" >
+    <thead>
+    <tr>
+        <th data-field="task_name" data-sortable="true" data-switchable="false">Task name</th>
+        <th data-field="task_status" data-sortable="true">Task status</th>
+        <th data-field="task_period">Task period</th>
+        <th data-field="task_retries">Remaining retries (number of retries configured)</th>
+        <th data-field="task_enabled" data-sortable="true" data-switchable="false" data-align="center">Task active</th>
+    	<th data-field="task_actions">Actions</th>
+    </tr>
+    </thead>
+    <tbody>
+	{% for task in sorted(tasks.itervalues()) %}
+    	{% module TaskTableItem(task) %}
+    {% end %}
+    </tbody>
+</table>
