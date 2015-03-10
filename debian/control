@@ -10,7 +10,7 @@ Homepage: https://github.com/OpenTouch/night-watch
 
 Package: night-watch
 Architecture: all
-Depends: ${misc:Depends}, ${python:Depends}, python-facette, python-apscheduler, python-yaml, python-requests, python-psycopg2
+Depends: ${misc:Depends}, ${python:Depends}, python-facette, python-apscheduler, python-yaml, python-requests, python-psycopg2, python-mysqldb
 Description: Night Watch Daemon
  NightWatch (a.k.a. Night Watch Daemon, or nwd) is a small server-side software that checks for systems inconsistencies and triggers alarms in the unfortunate event of something bad happening.
  
