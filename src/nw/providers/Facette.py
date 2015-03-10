@@ -101,7 +101,7 @@ class Facette(Provider):
             plot = self.fc.library.graphs.plots.get(self.graph_id, self.plot_range)
         except Exception:
             getLogger(__name__).error('Error occurred while trying to get plots from graph with id ' + self.graph_id + '. Facette server may be down.', exc_info=True)
-            raise
+            return None
         if not plot:
             # Graph id may has changed (delete/recreate graph, facette server re-deployed,...) - try to find again the graph id and relaunch the process function (if a new graph is not found, an exception will be raised by _findGraph)
             getLogger(__name__).error('The plots from graph with id ' + self.graph_id + ' is not found. The graph may has been deleted... Try to find the new graph id and call again process')
@@ -131,7 +131,8 @@ class Facette(Provider):
             # Compute the ratio
             if None in numerator_values or None in denominator_values:
                 getLogger(__name__).error('Not able to compute ratio from following values: ' + str(numerator_values) + ' / ' + str(denominator_values))
-                raise Exception('Not able to compute the ratio as some values collected using Facette server are None')
+                return None
+                #raise Exception('Not able to compute the ratio as some values collected using Facette server are None')
             else:
                 getLogger(__name__).debug('Compute ratio from following values: ' + str(numerator_values) + ' / ' + str(denominator_values))
                 ratio = sum(numerator_values) / sum(denominator_values)
