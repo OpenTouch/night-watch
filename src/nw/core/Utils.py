@@ -33,3 +33,13 @@ def loadYamlFile(f):
             return yaml.load(yml)
     else:
         raise Exception('The file "{}" is not a yaml file.'.format(f))
+
+def writeYamlFile(data, f):
+    if isYamlFile(f):
+        with open(f, "w") as yml:
+            Dumper = yaml.SafeDumper
+            Dumper.ignore_aliases = lambda self, data: True
+            yaml.dump(data, yml, default_flow_style=False, explicit_start=True, explicit_end=True, Dumper=Dumper)
+            return True
+    else:
+        raise Exception('File name does not have yaml extension: {}.'.format(f))

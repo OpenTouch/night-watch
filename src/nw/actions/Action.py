@@ -14,6 +14,7 @@
 #    under the License.
 
 from nw.core import ActionsManager
+from nw.core.NwExceptions import ActionConfigInvalid
 
 from logging import getLogger
 
@@ -56,7 +57,7 @@ class Action:
                 self._config = task_options
         # Check if the configuration is valid for the Action (if not, raise an exception)
         if not self._isConfigValid():
-            raise Exception('Invalid configuration for action "' + self.__class__.__name__ + '"')
+            raise ActionConfigInvalid('Invalid configuration for action "' + self.__class__.__name__ + '"')
         else:
             getLogger(__name__).debug('Configuration for action "' + self.__class__.__name__ + '" is valid. Config is: ' + str(self._config))
         
@@ -81,7 +82,7 @@ class Action:
         # Check if all the mandatory parameters are provided, otherwise raise an exception
         for param in self._mandatory_parameters:
             if not self._config.has_key(param):
-                raise AttributeError('Invalid configuration for Action "' + self.__class__.__name__ + '": mandatory parameter "' + param + '" is not provided. Please check Action/task configurations.')
+                raise ActionConfigInvalid('Invalid configuration for Action "' + self.__class__.__name__ + '": mandatory parameter "' + param + '" is not provided. Please check Action/task configurations.')
         
         # Check if all the optional parameters are provided, otherwise write a log
         for param in self._optional_parameters:

@@ -18,6 +18,8 @@ from logging import getLogger
 import json
 from tornado.web import RequestHandler
 
+from nw.core.NwExceptions import TaskNotFound, TaskConfigInvalid, ProviderConfigInvalid, ActionConfigInvalid
+
 
 class NightWatchHandler(RequestHandler):
     def initialize(self, nw_task_manager):
@@ -61,35 +63,83 @@ class TasksHandler(RequestHandler):
         self._nw_task_manager = nw_task_manager
         getLogger(__name__).info('Received request {method} {path}'.format(method=self.request.method, path=self.request.path))
 
-    def get(self, task_name=None, action=None):
-        if task_name:
-            task = self._nw_task_manager.getTask(task_name)
-            if task:
-                self.write(json.dumps(task.toDict()))
+    def get(self):
+        tasks = []
+        for task in self._nw_task_manager.getTasks().itervalues():
+            tasks.append(task.toDict())
+        self.write(json.dumps(tasks))
+            
+    def put(self, action):
+        try:
+            # TODO: try/except around actions and return list success/failed
+            data = json.loads(self.request.body.decode('utf-8'))
+            if action == 'pause':
+                for task in data:
+                    self._nw_task_manager.pauseTask(task.get('name'))
+            elif action == 'resume':
+                for task in data:
+                    self._nw_task_manager.resumeTask(task.get('name'))
+            elif action == 'reload':
+                self._nw_task_manager.reloadTask(task.get('name'))
             else:
-                self.set_status(404)
-                self.write(json.dumps({}))
-        else:
-            tasks = []
-            for task_name, task in self._nw_task_manager.getTasks().iteritems():
-                tasks.append(task.toDict())
-            self.write(json.dumps(tasks))
+                self.set_status(501)
+                self.write(json.dumps({"error_msg":"Action {} is not allowed. Allowed actions: pause | resume | reload".format(action)}))
+                
+            self.write(json.dumps({'status':'success'}))
+                
+        except Exception, e:
+            self.set_status(500)
+            self.write(json.dumps({"error_msg":e.message}))
+            
+            
+class TaskHandler(RequestHandler):
+    def initialize(self, nw_task_manager):
+        self._nw_task_manager = nw_task_manager
+        getLogger(__name__).info('Received request {method} {path}'.format(method=self.request.method, path=self.request.path))
+
+    def set_default_headers(self):
+        self.set_header('server', 'Night-Watch')
+        
+    def get(self, task_name, action=None):
+        try:
+            task = self._nw_task_manager.getTask(task_name)
+            self.write(json.dumps(task.toDict()))
+        except TaskNotFound as e:
+            self.set_status(404)
+            self.write(json.dumps({"error_msg":e.message}))
+        except Exception as e:
+            self.set_status(500)
+            self.write(json.dumps({"error_msg":e.message}))
+    
+    def post(self):
+        try:
+            task_config = json.loads(self.request.body.decode('utf-8'))
+            tasks_added = self._nw_task_manager.addTasks(task_config)
+            self.write(json.dumps([task.toDict() for task in tasks_added]))
+        except (TaskConfigInvalid, ProviderConfigInvalid, ActionConfigInvalid) as e:
+            self.set_status(501)
+            self.write(json.dumps({"error_msg":e.message}))
+        except Exception as e:
+            self.set_status(500)
+            self.write(json.dumps({"error_msg":e.message}))
             
     def put(self, task_name, action):
         try:
             if action == 'pause':
                 self._nw_task_manager.pauseTask(task_name)
-                self.write(json.dumps(self._nw_task_manager.getTask(task_name).toDict()))
             elif action == 'resume':
                 self._nw_task_manager.resumeTask(task_name)
-                self.write(json.dumps(self._nw_task_manager.getTask(task_name).toDict()))
-            #TODO: implement reload Task
-            #elif action == 'reload':
-            #    self._nw_task_manager.reloadTask(task_name)
-            #    self.write(json.dumps(self._nw_task_manager.getTask(task_name).toDict()))
+            elif action == 'reload':
+                self._nw_task_manager.reloadTask(task_name)
             else:
                 self.set_status(501)
                 self.write(json.dumps({"error_msg":"Action {} is not allowed. Allowed actions: pause | resume | reload".format(action)}))
-        except Exception, e:
+            
+            self.write(json.dumps(self._nw_task_manager.getTask(task_name).toDict()))
+            
+        except TaskNotFound as e:
+            self.set_status(404)
+            self.write(json.dumps({"error_msg":e.message}))
+        except Exception as e:
             self.set_status(500)
             self.write(json.dumps({"error_msg":e.message}))

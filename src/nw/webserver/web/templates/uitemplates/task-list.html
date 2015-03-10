@@ -5,6 +5,23 @@
 	<li> retries: {{ task.retries }} </li>
 	<li> remaining retries: {{ task._remaining_retries }} </li>
 	<li> is failed: {{ task._task_failed }} </li>
+	<li> providers:</li>
+	{% for provider in task.providers %}
+		<ul>
+			<li> provider: {{ provider.get("class") }} </li>
+			<li> expected value: {{ provider.get("condition") }} {{ provider.get("threshold") }} </li>
+			<li> last collected values:</li>
+			{% for history in provider.get("last_collected_values") %}
+			<ul>
+				<li> collected time: {{ history.get("time") }} </li>
+				<ul>
+					<li> value: {{ history.get("value") }} </li>
+					<li> is success: {{ history.get("is_success") }} </li>
+				</ul>
+			</ul>
+    		{% end %}
+		</ul>
+    {% end %}
 	{% if show_config %}
 	<li> task configuration:</li>
 		<ul>

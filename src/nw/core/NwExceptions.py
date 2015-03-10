@@ -24,3 +24,9 @@ class TaskFileInvalid(Exception):
 
 class TaskConfigInvalid(Exception):
     pass
+
+class ProviderConfigInvalid(Exception):
+    pass
+
+class ActionConfigInvalid(Exception):
+    pass
