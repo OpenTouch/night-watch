@@ -6,6 +6,11 @@ if [ "$1" = "configure" ]; then
     
     adduser --system --disabled-password --disabled-login --no-create-home --quiet --group $USER
 
+    pip install apscheduler
+    pip install pyyaml
+    pip install requests
+    pip install psycopg2
+
     mkdir -p /var/log/night-watch
     chown -R night-watch:night-watch /var/log/night-watch
     chmod 0750 /var/log/night-watch
