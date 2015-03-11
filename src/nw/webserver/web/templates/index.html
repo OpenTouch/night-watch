@@ -84,12 +84,81 @@
 {% end %}
 
 {% block content %}
-<p>The following tasks are setup in Night Watch:</p>
-<ul>
-	{% for task_name in sorted(Tasks.iterkeys()) %}
-	<li>
-	{{ task_name }}
-	</li>
-	{% end %}
-</ul>
+
+<!--<div class="row placeholders">
+  <div class="col-xs-6 col-sm-3 placeholder">
+    <canvas id="night-watch-status" class="donchart"></canvas>
+  </div>
+</div>-->
+
+{% if len(Tasks) > 0 %}
+	<div class="row">
+		<div class="panel panel-default">
+		<div class="panel-heading">Overview</div>
+		<div class="panel-body">
+		<div class="col-xs-6 col-sm-3 third widget doughnut thumbnail">
+		    <h3>Tasks status</h3>
+		    <div class="canvas-container">
+		        <canvas id="night-watch-tasks-status"></canvas>
+		        <span class="status"></span>
+		    </div>
+		    <div class="chart-legend">
+		        <ul>
+		            <li class="success">Success</li>
+		            <li class="failed">Failed</li>
+		        </ul>
+		    </div>
+		</div>
+		<div class="col-xs-6 col-sm-3 third widget doughnut thumbnail">
+		    <h3>Tasks enabled</h3>
+		    <div class="canvas-container ">
+		        <canvas id="night-watch-tasks-enabled"></canvas>
+		        <span class="status"></span>
+		    </div>
+		    <div class="chart-legend">
+		        <ul>
+		            <li class="enabled">Enabled</li>
+		            <li class="disabled">Disabled</li>
+		        </ul>
+		    </div>
+		</div>
+	
+		<div class="col-xs-6 col-sm-3 third widget thumbnail">
+		<ul class="list-group">
+			{% for task_name in sorted(Tasks.iterkeys()) %}
+			<li class="list-group-item">
+			{{ task_name }}
+			</li>
+			{% end %}
+		</ul>
+		</div>
+	</div>
+{% end %}
+
+{% end %}
+
+{% block javascript %}
+<script src={{ static_url("assets/chart/js/Chart.min.js") }} type="text/javascript"></script>
+
+<script type="text/javascript">
+	// Display graphs
+	var nbTasks = {{ len(Tasks) }};
+	var nbTasksSuccess = {{ len(TasksManager.getSuccessfulTasks()) }};
+	var nbTasksEnabled = {{ len(TasksManager.getEnabledTasks()) }};
+	
+	var myDoughnutChart = new Chart($("#night-watch-tasks-status").get(0).getContext("2d")).Doughnut(
+				data = [
+				    { value: nbTasksSuccess, color: "#46BFBD", highlight: "#5AD3D1", label: "Successful tasks" },
+				    { value: nbTasks - nbTasksSuccess, color:"#F7464A", highlight: "#FF5A5E", label: "Failed tasks)"}
+				]
+			);
+	
+	var myDoughnutChart = new Chart($("#night-watch-tasks-enabled").get(0).getContext("2d")).Doughnut(
+				data = [
+				    { value: nbTasksEnabled, color: "#46BFBD", highlight: "#5AD3D1", label: "Successful tasks" },
+				    { value: nbTasks - nbTasksEnabled, color:"#F7464A", highlight: "#FF5A5E", label: "Failed tasks)"}
+				]
+			);
+</script>
+ 
 {% end %}

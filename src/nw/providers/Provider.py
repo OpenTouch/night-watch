@@ -14,6 +14,7 @@
 #    under the License.
 
 from nw.core import ProvidersManager
+from nw.core.NwExceptions import ProviderConfigInvalid
 
 from logging import getLogger
 
@@ -59,7 +60,7 @@ class Provider:
                 self._config = options
         # Check if the configuration is valid for the Provider (if not, raise an exception)
         if not self._isConfigValid():
-            raise Exception('Invalid configuration for provider "' + self.__class__.__name__ + '"')
+            raise ProviderConfigInvalid('Invalid configuration for provider "' + self.__class__.__name__ + '"')
         else:
             getLogger(__name__).debug('Configuration for provider "' + self.__class__.__name__ + '" is valid. Config is: ' + str(self._config))
         
@@ -84,7 +85,7 @@ class Provider:
         # Check if all the mandatory parameters are provided, otherwise raise an exception
         for param in self._mandatory_parameters:
             if not self._config.has_key(param):
-                raise AttributeError('Invalid configuration for provider "' + self.__class__.__name__ + '": mandatory parameter "' + param + '" is not provided. Please check Provider/task configurations.')
+                raise ProviderConfigInvalid('Invalid configuration for provider "' + self.__class__.__name__ + '": mandatory parameter "' + param + '" is not provided. Please check Provider/task configurations.')
         
         # Check if all the optional parameters are provided, otherwise write a log
         for param in self._optional_parameters:

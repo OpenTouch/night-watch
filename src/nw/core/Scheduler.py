@@ -39,12 +39,12 @@ class Scheduler:
     def addJob(self, policy, job_function, job_name):
         # Check that a job with the same name has not already be registered
         if self.jobs.has_key(job_name) and self.jobs.get(job_name) != None:
-            raise Exception ('A job named "' + job_name + '" has already been scheduled')
+            raise Exception ('A job named "{}" has already been scheduled'.format(job_name))
         # Get the period trigger to use
         trigger = self._getTrigger(policy)
         # Add the job to the scheduler
         j = self.scheduler.add_job(job_function, name = job_name, max_instances = 1, trigger=trigger)
-        getLogger(__name__).debug('Job "' + job_name +'" has been added to scheduler, it has the id ' + j.id + '. It is scheduled every ' + policy)
+        getLogger(__name__).debug('Job "{}" has been added to scheduler, it has the id {}. It is scheduled every {}'.format(job_name, j.id, policy))
         # Store job if so that we can update it if needed
         self.jobs[job_name] = j.id
 
@@ -52,35 +52,35 @@ class Scheduler:
     def rescheduleJob(self, policy, job_name):
         # Check that the job with job_name well exist
         if not(self.jobs.has_key(job_name) or not(self.jobs.get(job_name))):
-            raise Exception ('Job named "' + job_name + '" can not be rescheduled because it is not registered in scheduler')
+            raise Exception ('Job named "{}" can not be rescheduled because it is not registered in scheduler'.format(job_name))
         # Get the period trigger to use
         trigger = self._getTrigger(policy)
         # Reschedule the job with the new trigger
-        getLogger(__name__).debug('Reschedule job "' + job_name +'" having id ' + self.jobs.get(job_name))
+        getLogger(__name__).debug('Reschedule job "{}" having id {}'.format(job_name, self.jobs.get(job_name)))
         self.scheduler.reschedule_job(self.jobs.get(job_name), trigger=trigger)
 
 
     def pauseJob(self, job_name):
         # Check that the job with job_name well exist
         if not(self.jobs.has_key(job_name) or not(self.jobs.get(job_name))):
-            raise Exception ('Job named "' + job_name + '" can not be paused because it is not registered in scheduler')
-        getLogger(__name__).debug('Pause job "' + job_name +'" having id ' + self.jobs.get(job_name))
-        self.scheduler.pause_job()(self.jobs.get(job_name))
+            raise Exception ('Job named "{}" can not be paused because it is not registered in scheduler'.format(job_name))
+        getLogger(__name__).debug('Pause job "{}" having id {}'.format(job_name, self.jobs.get(job_name)))
+        self.scheduler.pause_job(self.jobs.get(job_name))
 
 
     def resumeJob(self, job_name):
         # Check that the job with job_name well exist
         if not(self.jobs.has_key(job_name) or not(self.jobs.get(job_name))):
-            raise Exception ('Job named "' + job_name + '" can not be resumed because it is not registered in scheduler')
-        getLogger(__name__).debug('Resume job "' + job_name +'" having id ' + self.jobs.get(job_name))
+            raise Exception ('Job named "{}" can not be resumed because it is not registered in scheduler'.format(job_name))
+        getLogger(__name__).debug('Resume job "{}" having id {}'.format(job_name, self.jobs.get(job_name)))
         self.scheduler.resume_job(self.jobs.get(job_name))
 
 
     def removeJob(self, job_name, keepJobEntry=False):
         # Check that the job with job_name well exist
         if not(self.jobs.has_key(job_name) or not(self.jobs.get(job_name))):
-            raise Exception ('Job named "' + job_name + '" can not be removed because it is not registered in scheduler')
-        getLogger(__name__).debug('Remove job "' + job_name +'" from scheduler')
+            raise Exception ('Job named "{}" can not be removed because it is not registered in scheduler'.format(job_name))
+        getLogger(__name__).debug('Remove job "{}" from scheduler'.format(job_name))
         self.scheduler.remove_job(self.jobs.get(job_name))
         if not keepJobEntry:
             self.jobs.pop(job_name)

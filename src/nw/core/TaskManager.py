@@ -15,12 +15,13 @@
 
 import os, sys, time
 from logging import getLogger
+import uuid
 
 from nw.core.Task import Task
-from nw.core.NwConfiguration import getNwConfiguration
+from nw.core.TaskLoader import TaskLoader
 from nw.core.Scheduler import Scheduler
 from nw.core import ActionsManager, ProvidersManager
-from nw.core.Utils import isYamlFile, loadYamlFile
+from nw.core.NwExceptions import TaskFileIOError, TaskNotFound, TaskFileInvalid, TaskConfigInvalid
 
 class TaskManager:
     """
@@ -28,7 +29,8 @@ class TaskManager:
     """
     def __init__(self):
         self.tasks = {}
-        self._scheduler = None
+        self._task_loader = TaskLoader()
+        self._scheduler = Scheduler()
         self._started = False
         self._reloading = False
         
@@ -52,14 +54,19 @@ class TaskManager:
             raise Exception ("TaskManager is already reloading...")
         # Reload TaskManager
         self._reloading = True
-        if self._scheduler:
-            self._scheduler.removeAllJobs()
-        self.tasks.clear()
-        ProvidersManager.clearProviderConfig()
-        ActionsManager.clearActionConfig()
-        self._init()
-        self._reloading = False
-        getLogger(__name__).info('TaskManager reloaded')
+        try:
+            if self._scheduler:
+                self._scheduler.removeAllJobs()
+            self.tasks.clear()
+            ProvidersManager.clearProviderConfig()
+            ActionsManager.clearActionConfig()
+            self._init()
+            self._reloading = False
+            getLogger(__name__).info('TaskManager reloaded')
+        except Exception as e:
+            getLogger(__name__).error('TaskManager failed to reload, error: {}'.format(e.message), exc_info=True)
+            self._reloading = False
+            raise
     
     def stop(self, wait=True):
         if self._scheduler == None:
@@ -83,55 +90,127 @@ class TaskManager:
     def getTasks(self):
         return self.tasks
     
+    def getSuccessfulTasks(self):
+        return [task for task in self.tasks.itervalues() if task.isSuccess()]
+    
+    def getEnabledTasks(self):
+        return [task for task in self.tasks.itervalues() if task.isEnabled()]
+    
     def getTask(self, task_name):
-        return self.tasks.get(task_name, None)
+        if self.tasks.has_key(task_name):
+            return self.tasks.get(task_name)
+        else:
+            raise TaskNotFound('Task with "{}" is not found'.format(task_name))
+        
+    
+    """def getTaskFilename(self, task_name):
+        return self.getTask(task_name).from_yaml_filename"""
+    
+    def addTasks(self, tasks_config, task_filename=str(uuid.uuid1())+'.yml'):
+        loaded_tasks = self._loadTasksFromDict(tasks_config, task_filename)
+        tasks_to_add = []
+        tasks_to_update = {}
+        for task in loaded_tasks:
+            if self.tasks.has_key(task.name):
+                getLogger(__name__).warning('A task named "{}" has already exist in file {} and will be overwritten'.format(task.name, task.from_yaml_filename))
+                tasks_to_update[task.name] = task.yaml_config
+            else:
+                self.tasks[task.name] = task
+                self._scheduleTask(task)
+                tasks_to_add.append(task)
+        if tasks_to_add:
+            self._task_loader.addTasksInFiles(tasks_to_add)
+        if tasks_to_update:
+            self.updateTasks(tasks_to_update)
+        return [self.getTask(task.name) for task in tasks_config]
                 
+    def updateTasks(self, tasks_config):
+        # Make a first loop to check if config is valid (update is only applied if all tasks are valid)
+        for task_name, task_config in tasks_config.iteritems():
+            if not task_name:
+                raise TaskConfigInvalid("Can't update tasks because some task provided tasks_config parameter is invalid: {}".format(task_config))
+            if not self.tasks.has_key(task_name):
+                raise TaskNotFound('Can\'t update tasks because provided task "{}" is not found. Abort update of all tasks.'.format(task_config.get('name')))
+        
+        tasks = self._loadTasksFromDict(tasks_config)
+        for task in tasks:
+            # Remove old task from scheduler
+            self._scheduler.removeJob(task.name)
+            # Remove the task from TaskManager
+            deleted_task = self.tasks.pop(task.name)
+            # Delete the task
+            del deleted_task
+            # Store the new task TaskManager
+            self.tasks[task.name] = task
+            # Add new task to scheduler
+            self._scheduleTask(task)
+        # Update the tasks in their config file
+        self._task_loader.updateTasksInFiles(tasks)
+                
+    def deleteTasks(self, tasks_name):
+        deleted_tasks = []
+        for task_name in tasks_name:
+            if self.tasks.has_key(task_name):
+                # Remove the task from scheduler
+                self._scheduler.removeJob(task_name)
+                # Remove the task from TaskManager
+                deleted_tasks.append(self.tasks.pop(task_name))
+            else:
+                getLogger(__name__).warning('Not able to delete task "{}", task is not found.'.format(task_name))
+        # Remove the task from Yaml config file
+        self._task_loader.removeTasksFromFiles(deleted_tasks)
+        for task in task:
+            # Delete the task
+            del task
+    
+    def reloadTask(self, task_name):
+        getLogger(__name__).info('Reload task "{}"'.format(task_name))
+        task = self.getTask(task_name)
+        task_config = self._task_loader.loadTaskFromFile(task.from_yaml_filename, task.name)
+        loaded_task = self._loadTasksFromDict([task_config],task.from_yaml_filename)[0]
+        # Remove the old task from scheduler
+        self._scheduler.removeJob(task_name)
+        # Remove the old task from TaskManager
+        deleted_task = self.tasks.pop(task_name)
+        del deleted_task
+        # Store the new task in TaskManager
+        self.tasks[task.name] = loaded_task
+        # Add new task to scheduler
+        self._scheduleTask(loaded_task)
     
     def pauseTask(self, task_name):
-        task = self.tasks.get(task_name, None)
-        if not task:
-            getLogger(__name__).warning('Not able to pause task "{}", task is not found.'.format(task_name))
-            raise Exception ('Not able to pause task "{}", task is not found.'.format(task_name))
+        getLogger(__name__).info('Pause task "{}"'.format(task_name))
         # Update _task_enabled value in Task object
-        task_updated = task.disableTask()
+        task_updated = self.getTask(task_name).disableTask()
         if task_updated:
             # Pause the task in scheduler
-            getLogger(__name__).info('Pause task "{}"'.format(task.name))
-            self._scheduler.pauseJob(task.name)
+            self._scheduler.pauseJob(task_name)
         else:
-            getLogger(__name__).warning('Not able to pause task "{}"'.format(task.name))
-            raise Exception ('Not able to pause task "' + task.name)
+            getLogger(__name__).warning('Not able to pause task "{}"'.format(task_name))
+            raise Exception ('Not able to pause task "{}"'.format(task_name))
     
     def resumeTask(self, task_name):
-        task = self.tasks.get(task_name, None)
-        if not task:
-            getLogger(__name__).warning('Not able to resume task "{}", task is not found.'.format(task_name))
-            raise Exception ('Not able to resume task "{}", task is not found.'.format(task_name))
+        getLogger(__name__).warning('Resume task "{}"'.format(task_name))
         # Update _task_enabled value in Task object
-        task_updated = task.enableTask()
+        task_updated = self.getTask(task_name).enableTask()
         if task_updated:
             # Resume the task in scheduler
-            getLogger(__name__).info('Resume task "{}"'.format(task.name))
-            self._scheduler.resumeJob(task.name)
+            self._scheduler.resumeJob(task_name)
         else:
-            getLogger(__name__).warning('Not able to resume "{}"'.format(task.name))
-            raise Exception ('Not able to resume "{}"'.format(task.name))
+            getLogger(__name__).warning('Not able to resume "{}"'.format(task_name))
+            raise Exception ('Not able to resume "{}"'.format(task_name))
     
     def updateTaskPeriod(self, task_name, new_period):
-        task = self.tasks.get(task_name, None)
-        if not task:
-            getLogger(__name__).warning('Not able to reschedule task "{}", task is not found.'.format(task_name))
-            raise Exception ('Not able to reschedule task "{}", task is not found.'.format(task_name))
+        getLogger(__name__).info('Reschedule task "{}" to period {}'.format(task_name, new_period))
         # Update task period value in Task object
+        task = self.getTask(task_name)
         task_updated = task.updateTaskPeriod(new_period)
         if task_updated:
-            # Change the task periodicity in scheduler
-            getLogger(__name__).info('Reschedule task "' + task.name + '" to period ' + str(task.period))
             # Update scheduler job so that it redefines periodicity of calls to task.run for task task.name
             self._scheduler.rescheduleJob(task.period, task.name)
         else:
-            getLogger(__name__).warning('Not able to reschedule task "' + task.name + '" to period ' + str(new_period))
-            raise Exception ('Not able to reschedule task "' + task.name + '" to period ' + str(new_period))
+            getLogger(__name__).warning('Not able to reschedule task "{}" to period {}'.format(task.name, new_period))
+            raise Exception ('Not able to reschedule task "{}" to period {}'.format(task.name, new_period))
             
     
     """
@@ -140,64 +219,48 @@ class TaskManager:
     def _init(self):
         # Load tasks from the config files located in the config task folder
         if not self.tasks:
-            self._loadTasks()
+            self._loadAllTasks()
             self._scheduleTasks()
         getLogger(__name__).info('Tasks loaded')
         
-    def _loadTasks(self):
+    def _loadTasksFromDict(self, tasks_config, tasks_filename):
         getLogger(__name__).debug('Loading tasks...')
-        tasks_location = getNwConfiguration().tasks_location
-        
-        tasks_files = []
-        try:
-            for f in os.listdir(tasks_location):
-                if os.path.isfile(os.path.join(tasks_location,f)) and isYamlFile(f):
-                    tasks_files.append(f)
-        except Exception, e:
-            getLogger(__name__).critical('The directory ' + tasks_location + ' is not reachable', exc_info=True)
-            exit(-1)
-        
-        getLogger(__name__).debug('List of task config files to load: ' + str(tasks_files))
-        # Load all the tasks' config files
-        for task_file in tasks_files:
-            try:
-                getLogger(__name__).info('Load task config file from ' + task_file)
-                config = loadYamlFile(os.path.join(tasks_location,task_file))
-            except Exception, e:
-                getLogger(__name__).critical('Could not read task config file from ' + task_file + '. Reason is: ' + e.message, exc_info=True)
-                exit(-1)
-                
-            # Instantiate a Task for every task in the current task config file
-            for task_name, task in config.iteritems():
-                getLogger(__name__).debug('Load task "' + task_name + '"')
-                try:
-                    t = Task(nw_task_manager = self,
-                             name = task_name,
-                             period_success = task.get('period_success'),
-                             period_retry = task.get('period_retry'),
-                             period_failed = task.get('period_failed'),
-                             retries = task.get('retries'), 
-                             providers = task.get('providers'),
-                             actions_failed = task.get('actions_failed'),
-                             actions_success = task.get('actions_success'))
-                    
-                    if self.tasks.has_key(t.name)   :
-                        getLogger(__name__).warning('A task named "' + task_name + '" has already been loaded and is overwritten by the task from task config file ' + task_file)
-                    self.tasks[t.name] = t
-                # TODO: add a better error management (specific errors for invalid configuration, missing required parameters, provider/action initialization problem,...)
-                except Exception, e:
-                    # TBD: Exit program with critical error or execute the successfully loaded tasks anyway?
-                    getLogger(__name__).critical('Could not load task "' + task_name + '" from task config file ' + task_file + '. Reason is: ' + str(e.message), exc_info=True)
-                    sys.exit(2)
+        tasks = []
+        # Instantiate a Task for every task in the provided tasks_config dictionary
+        for task_name, task_config in tasks_config.iteritems():
+            getLogger(__name__).debug('Instantiate task "{}"'.format(task_name))
+            t = Task(nw_task_manager = self,
+                     name = task_name,
+                     config = task_config,
+                     from_filename = tasks_filename)
+            tasks.append(t)
         getLogger(__name__).debug('Tasks loaded')
+        return tasks
+        
+    def _loadAllTasks(self):
+        getLogger(__name__).debug('Loading tasks...')
+        tasks_config_files = self._task_loader.loadAllTasks()
+        # Instantiate a Task for every task in the current task config file
+        for tasks_filename, tasks_config in tasks_config_files.iteritems():
+            for task_name, task_config in tasks_config.iteritems():
+                getLogger(__name__).debug('Instantiate task "{}"'.format(task_name))
+                t = Task(nw_task_manager = self,
+                         name = task_name,
+                         config = task_config,
+                         from_filename = tasks_filename)
+                if self.tasks.has_key(t.name)   :
+                    getLogger(__name__).warning('A task named "{}" has already been loaded and is overwritten by the task from task config file '.format(task_name, tasks_filename))
+                self.tasks[t.name] = t
+        getLogger(__name__).debug('Tasks loaded')
+                        
+    def _scheduleTask(self, task):
+        getLogger(__name__).debug('Schedule task "{}"'.format(task.name))
+        # Add job to the scheduler so that it calls task.run every task.period
+        self._scheduler.addJob(task.period, task.run, task.name)
+        time.sleep(0.5)
                         
     def _scheduleTasks(self):
         getLogger(__name__).debug('Scheduling tasks...')
-        if not self._scheduler:
-            self._scheduler = Scheduler()
-        for key, task in self.tasks.iteritems():
-            getLogger(__name__).info('Schedule task "' + key + '"')
-            # Add job to the scheduler so that it calls task.run every task.period
-            self._scheduler.addJob(task.period, task.run, task.name)
-            time.sleep(0.5)
+        for task in self.tasks.itervalues():
+            self._scheduleTask(task)
         getLogger(__name__).debug('Tasks scheduled')
