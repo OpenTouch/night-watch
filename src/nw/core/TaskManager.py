@@ -122,7 +122,7 @@ class TaskManager:
             self._task_loader.addTasksInFiles(tasks_to_add)
         if tasks_to_update:
             self.updateTasks(tasks_to_update)
-        return [self.getTask(task.name) for task in tasks_config]
+        return [self.getTask(task) for task in tasks_config.keys()]
                 
     def updateTasks(self, tasks_config):
         # Make a first loop to check if config is valid (update is only applied if all tasks are valid)
