@@ -13,73 +13,13 @@
 				<h4>Monitoring</h4>
 				<div id="btn-monitoring" class="btn-group btn-toggle"> 
 					<button id="btn-monitoring-on" class="btn btn-on {% if TasksManager.isRunning() %}btn-success active{% else %}btn-default{% end %}" {% if TasksManager.isRunning() %}disabled{% end %}>On</button>
-					<button id="btn-monitoring-off" class="btn btn-off {% if not TasksManager.isRunning() %}btn-danger active{% else %}btn-default{% end %}" data-toggle="modal" data-target="#disableMonitoringPopup" {% if not TasksManager.isRunning() %}disabled{% end %}>Off</button>
+					<button id="btn-monitoring-off" class="btn btn-off {% if not TasksManager.isRunning() %}btn-danger active{% else %}btn-default{% end %}" {% if not TasksManager.isRunning() %}disabled{% end %}>Off</button>
 				</div>
 			
 				<h4>Reload</h4>
 				<button id="reload-config-button" type="button" class="btn btn-warning" data-toggle="modal" data-target="#reloadConfigPopup" {% if (not TasksManager.isRunning()) or TasksManager.isReloading() %}disabled{% end %}>{% if TasksManager.isReloading() %}<span class="glyphicon glyphicon-refresh spinning"></span> Reloading Night-Watch...{% else %}Reload config files{% end %}</button>
 			</div>
 		</div>
-		
-		<div class="modal fade" id="disableMonitoringPopup" tabindex="-1" role="dialog" aria-labelledby="disableMonitoringPopup" aria-hidden="true">
-			<div class="modal-dialog">
-				<div class="modal-content">
-					<div class="modal-header">
-						<button type="button" class="close" data-dismiss="modal"  data-target="#disableMonitoringPopup" aria-label="Close">
-							<span aria-hidden="true">&times;</span>
-						</button>
-						<h4 class="modal-title">Pause Night-Watch monitoring?</h4>
-					</div>
-					<div class="modal-body">
-    					<p>Night-Watch will stop monitoring.</p>
-    					<p>Are you sure you want to proceed?</p>
-						<form role="form">
-							<button id="confirm-disable-monitoring-button" type="button" class="btn btn-on btn-warning">Yes</button>
-							<button type="button" class="btn btn-default" data-dismiss="modal">No</button>
-						</form>
-					</div> <!-- /.modal-body -->
-				</div> <!-- /.modal-content -->
-			</div> <!-- /.modal-dialog -->
-		</div> <!-- /.modal -->
-		
-		<div class="modal fade" id="reloadConfigPopup" tabindex="-1" role="dialog" aria-labelledby="reloadConfigPopup" aria-hidden="true">
-			<div class="modal-dialog">
-				<div class="modal-content">
-					<div class="modal-header">
-						<button type="button" class="close" data-dismiss="modal"  data-target="#reloadConfigPopup" aria-label="Close">
-							<span aria-hidden="true">&times;</span>
-						</button>
-						<h4 class="modal-title">Reload Night-Watch configuration files?</h4>
-					</div>
-					<div class="modal-body">
-    					<p>Night-Watch will reload all its configuration files and won't monitor anymore while it's reloading (for a few seconds).</p>
-    					<p>Are you sure you want to proceed?</p>
-						<form role="form">
-							<button id="confirm-reload-config-button" type="button" class="btn btn-on btn-warning">Yes</button>
-							<button type="button" class="btn btn-default" data-dismiss="modal">No</button>
-						</form>
-					</div> <!-- /.modal-body -->
-				</div> <!-- /.modal-content -->
-			</div> <!-- /.modal-dialog -->
-		</div> <!-- /.modal -->
-		
-		<div class="modal fade" id="informativePopup" tabindex="-1" role="dialog" aria-labelledby="informativePopup" aria-hidden="true">
-			<div class="modal-dialog">
-				<div class="modal-content">
-					<div class="modal-header">
-						<button type="button" class="close" data-dismiss="modal"  data-target="#informativePopup" aria-label="Close">
-							<span aria-hidden="true">&times;</span>
-						</button>
-						<h4 class="modal-title"></h4>
-					</div>
-					<div class="modal-body">
-					</div>
-					<div class="modal-footer">
-						<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-					</div> <!-- /.modal-body -->
-				</div> <!-- /.modal-content -->
-			</div> <!-- /.modal-dialog -->
-		</div> <!-- /.modal -->
 	</header>
 {% end %}
 
@@ -138,9 +78,10 @@
 {% end %}
 
 {% block javascript %}
-<script src={{ static_url("assets/chart/js/Chart.min.js") }} type="text/javascript"></script>
-
-<script type="text/javascript">
+	<script src={{ static_url("night-watch/js/index-actions-listener.js") }} type="text/javascript"></script>
+	
+	<script src={{ static_url("assets/chart/js/Chart.min.js") }} type="text/javascript"></script>
+	<script type="text/javascript">
 	// Display graphs
 	var nbTasks = {{ len(Tasks) }};
 	var nbTasksSuccess = {{ len(TasksManager.getSuccessfulTasks()) }};
@@ -159,6 +100,5 @@
 				    { value: nbTasks - nbTasksEnabled, color:"#F7464A", highlight: "#FF5A5E", label: "Failed tasks)"}
 				]
 			);
-</script>
- 
+	</script>
 {% end %}
