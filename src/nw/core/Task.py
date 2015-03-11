@@ -107,14 +107,14 @@ class Task():
                 getLogger(__name__).error('Provider "{}" raised an error while collecting value for task "{}". Not able to process this task.'.format(provider.get('class'), self.name), exc_info=True)
                 self._storeProviderHistory(provider, None, False)
             else:
-                if not self._is_condition_conform(provider, value):
+                if self._is_condition_conform(provider, value):
                     success_providers.append(provider)
                 else:
                     failed_providers.append(provider)
                 
                 self._storeProviderHistory(provider, value, True)
         if failed_providers:
-            getLogger(__name__).debug('{} on {} providers collected values are valid for task "{}", task failed'.format(nb_success, len(self.providers), self.name))
+            getLogger(__name__).debug('{} on {} providers collected values are valid for task "{}", task failed'.format(len(success_providers), len(self.providers), self.name))
             # At least one task failed
             if self._remaining_retries > 0:
                 if self._remaining_retries == self.retries:
@@ -134,7 +134,7 @@ class Task():
                 getLogger(__name__).warning('Task "{}" just failed, process the actions_failed'.format(self.name))
                 log_message = "when the task failed"
                 for provider in failed_providers:
-                    self._makeAction(self.actions_failed, log_message, False, provider.get('condition'), provider.get('threshold'), provider.get('last_collected_values')[0].get('value'))
+                    self._makeAction(self.actions_failed, log_message, False, [provider.get('condition')], [provider.get('threshold')], [provider.get('last_collected_values')[0].get('value')])
                         
         else: # Task is conform
             if self._remaining_retries != self.retries:
@@ -149,7 +149,7 @@ class Task():
                 getLogger(__name__).info('Task "{}" is back to normal, process the actions_success'.format(self.name))
                 log_message = "when the task is back to normal"
                 for provider in success_providers:
-                    self._makeAction(self.actions_success, log_message, True, provider.get('condition'), provider.get('threshold'), provider.get('last_collected_values')[0].get('value'))
+                    self._makeAction(self.actions_success, log_message, True, [provider.get('condition')], [provider.get('threshold')], [provider.get('last_collected_values')[0].get('value')])
             else:
                 getLogger(__name__).debug('Task "{}" is still normal.'.format(self.name))
             
