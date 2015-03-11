@@ -55,6 +55,7 @@ class NightWatchHandler(RequestHandler):
                 self.set_status(501)
                 self.write(json.dumps({"error_msg":"Action {} is not allowed. Allowed actions: pause | resume | reload".format(action)}))
         except Exception, e:
+            getLogger(__name__).error('Error while handling {method} {path}: {error}'.format(method=self.request.method, path=self.request.path, error=e.message), exc_info=True)
             self.set_status(500)
             self.write(json.dumps({"error_msg":e.message}))
 
@@ -88,6 +89,7 @@ class TasksHandler(RequestHandler):
             self.write(json.dumps({'status':'success'}))
                 
         except Exception, e:
+            getLogger(__name__).error('Error while handling {method} {path}: {error}'.format(method=self.request.method, path=self.request.path, error=e.message), exc_info=True)
             self.set_status(500)
             self.write(json.dumps({"error_msg":e.message}))
             
@@ -105,21 +107,27 @@ class TaskHandler(RequestHandler):
             task = self._nw_task_manager.getTask(task_name)
             self.write(json.dumps(task.toDict()))
         except TaskNotFound as e:
+            getLogger(__name__).error('Error while handling {method} {path}: {error}'.format(method=self.request.method, path=self.request.path, error=e.message), exc_info=True)
             self.set_status(404)
             self.write(json.dumps({"error_msg":e.message}))
         except Exception as e:
+            getLogger(__name__).error('Error while handling {method} {path}: {error}'.format(method=self.request.method, path=self.request.path, error=e.message), exc_info=True)
             self.set_status(500)
             self.write(json.dumps({"error_msg":e.message}))
     
     def post(self):
         try:
-            task_config = json.loads(self.request.body.decode('utf-8'))
-            tasks_added = self._nw_task_manager.addTasks(task_config)
+            data = json.loads(self.request.body.decode('utf-8'))
+            filename = data["filename"]
+            task_config = data["tasks"]
+            tasks_added = self._nw_task_manager.addTasks(task_config, filename)
             self.write(json.dumps([task.toDict() for task in tasks_added]))
         except (TaskConfigInvalid, ProviderConfigInvalid, ActionConfigInvalid) as e:
+            getLogger(__name__).error('Error while handling {method} {path}: {error}'.format(method=self.request.method, path=self.request.path, error=e.message), exc_info=True)
             self.set_status(501)
             self.write(json.dumps({"error_msg":e.message}))
         except Exception as e:
+            getLogger(__name__).error('Error while handling {method} {path}: {error}'.format(method=self.request.method, path=self.request.path, error=e.message), exc_info=True)
             self.set_status(500)
             self.write(json.dumps({"error_msg":e.message}))
             
@@ -138,8 +146,10 @@ class TaskHandler(RequestHandler):
             self.write(json.dumps(self._nw_task_manager.getTask(task_name).toDict()))
             
         except TaskNotFound as e:
+            getLogger(__name__).error('Error while handling {method} {path}: {error}'.format(method=self.request.method, path=self.request.path, error=e.message), exc_info=True)
             self.set_status(404)
             self.write(json.dumps({"error_msg":e.message}))
         except Exception as e:
+            getLogger(__name__).error('Error while handling {method} {path}: {error}'.format(method=self.request.method, path=self.request.path, error=e.message), exc_info=True)
             self.set_status(500)
             self.write(json.dumps({"error_msg":e.message}))
