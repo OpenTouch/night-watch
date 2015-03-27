@@ -60,21 +60,21 @@ class Email(Action):
         # TODO: improve the Email action (add template, options,...)     
         # Build email header
         # Add 'From' header
-        header  = 'From: %s\n' % self._config.get('email_from_addr')
+        msg = MIMEMultipart()
+        msg['From'] = self._config.get('email_from_addr')
         # Add 'To' header
         if type(self._config.get('email_to_addrs')) is list:
-            header += 'To: %s\n' % ','.join(self._config.get('email_to_addrs'))
+            msg['To'] = ','.join(self._config.get('email_to_addrs'))
         elif type(self._config.get('email_to_addrs')) is str:
-            header += 'To: %s\n' % self._config.get('email_to_addrs')
+            msg['To'] = self._config.get('email_to_addrs')
         # Add 'Cc' header (if needed)
         if self._config.get('email_cc_addrs'):
             if type(self._config.get('email_cc_addrs')) is list:
-                header += 'Cc: %s\n' % ','.join(self._config.get('email_cc_addrs'))
+                msg['Cc'] = ','.join(self._config.get('email_cc_addrs'))
             elif type(self._config.get('email_cc_addrs')) is str:
-                header += 'Cc: %s\n' % self._config.get('email_cc_addrs')
+                msg['Cc'] = self._config.get('email_cc_addrs')
         # Add 'Subject' header
-        subject = self._config.get('email_subject') or ''
-        header += 'Subject: %s\n\n' % subject
+        msg['Subject'] = self._config.get('email_subject') or ''
         
         # Build email message (concatenate email header and email body)
         message = "Hello, \n\n"
@@ -89,8 +89,8 @@ class Email(Action):
 
         message += self._config.get("email_signature")
 
-        message = header + message
-            
+        msg.attach(MIMEText(message, 'plain'))
+
         # Send the email
         try:           
             # Connect to the SMTP server
@@ -108,7 +108,8 @@ class Email(Action):
                 self.smtp.login(self._config.get('smtp_srv_login'), self._config.get('smtp_srv_password'))
                 
             # Send the email
-            self.smtp.sendmail(self._config.get('email_from_addr'), self._config.get('email_to_addrs'), message)  
+            # TODO send mail to Cc too
+            self.smtp.sendmail(self._config.get('email_from_addr'), self._config.get('email_to_addrs'), msg.as_string())
             getLogger(__name__).info('Email sent')
             
             # Close the connection with the SMTP
