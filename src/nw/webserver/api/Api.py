@@ -28,14 +28,18 @@ class NightWatchHandler(RequestHandler):
         getLogger(__name__).info('Received request {method} {path}'.format(method=self.request.method, path=self.request.path))
 
     def get(self, action):
+        response = {}
         if action == 'status':
             if self._nw_task_manager.isReloading():
-                status = "Reloading" 
+                response['status'] = "Reloading" 
             elif self._nw_task_manager.isRunning():
-                status = "Running"
+                response['status'] = "Running"
+                response['nb_successful_tasks'] = len(self._nw_task_manager.getSuccessfulTasks())
             else:
-                status = "Stopped"
-            self.write(json.dumps({'status':status}))
+                response['status'] = "Stopped"
+            response['nb_loaded_tasks'] = len(self._nw_task_manager.getTasks())
+            response['nb_enabled_tasks'] = len(self._nw_task_manager.getEnabledTasks())
+            self.write(json.dumps(response))
         else:
             self.set_status(501)
             self.write(json.dumps({"error_msg":"Action {} is not allowed. Allowed actions: status".format(action)}))
@@ -44,16 +48,14 @@ class NightWatchHandler(RequestHandler):
         try:
             if action == 'pause':
                 self._nw_task_manager.stop()
-                return self.get('status')
             elif action == 'resume':
                 self._nw_task_manager.start()
-                return self.get('status')
             elif action == 'reload':
                 self._nw_task_manager.reload()
-                self.write(json.dumps({'status':'reloaded'}))
             else:
                 self.set_status(501)
                 self.write(json.dumps({"error_msg":"Action {} is not allowed. Allowed actions: pause | resume | reload".format(action)}))
+            return self.get('status')
         except Exception, e:
             getLogger(__name__).error('Error while handling {method} {path}: {error}'.format(method=self.request.method, path=self.request.path, error=e.message), exc_info=True)
             self.set_status(500)

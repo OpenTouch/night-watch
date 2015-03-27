@@ -1,4 +1,4 @@
-# Copyright (c) 2014 Alcatel-Lucent Enterprise
+# Copyright (c) 2015 Alcatel-Lucent Enterprise
 # All Rights Reserved.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -45,8 +45,8 @@ class Scheduler:
         # Add the job to the scheduler
         j = self.scheduler.add_job(job_function, name = job_name, max_instances = 1, trigger=trigger)
         getLogger(__name__).debug('Job "{}" has been added to scheduler, it has the id {}. It is scheduled every {}'.format(job_name, j.id, policy))
-        # Store job if so that we can update it if needed
-        self.jobs[job_name] = j.id
+        # Store job so that we can update it if needed
+        self.jobs[job_name] = j
 
 
     def rescheduleJob(self, policy, job_name):
@@ -56,8 +56,8 @@ class Scheduler:
         # Get the period trigger to use
         trigger = self._getTrigger(policy)
         # Reschedule the job with the new trigger
-        getLogger(__name__).debug('Reschedule job "{}" having id {}'.format(job_name, self.jobs.get(job_name)))
-        self.scheduler.reschedule_job(self.jobs.get(job_name), trigger=trigger)
+        getLogger(__name__).debug('Reschedule job "{}" having id {}'.format(job_name, self.jobs.get(job_name).id))
+        self.jobs.get(job_name).reschedule(trigger=trigger)
 
 
     def pauseJob(self, job_name):
@@ -65,7 +65,7 @@ class Scheduler:
         if not(self.jobs.has_key(job_name) or not(self.jobs.get(job_name))):
             raise Exception ('Job named "{}" can not be paused because it is not registered in scheduler'.format(job_name))
         getLogger(__name__).debug('Pause job "{}" having id {}'.format(job_name, self.jobs.get(job_name)))
-        self.scheduler.pause_job(self.jobs.get(job_name))
+        self.jobs.get(job_name).pause()
 
 
     def resumeJob(self, job_name):
@@ -73,7 +73,7 @@ class Scheduler:
         if not(self.jobs.has_key(job_name) or not(self.jobs.get(job_name))):
             raise Exception ('Job named "{}" can not be resumed because it is not registered in scheduler'.format(job_name))
         getLogger(__name__).debug('Resume job "{}" having id {}'.format(job_name, self.jobs.get(job_name)))
-        self.scheduler.resume_job(self.jobs.get(job_name))
+        self.jobs.get(job_name).resume()
 
 
     def removeJob(self, job_name, keepJobEntry=False):
@@ -81,7 +81,7 @@ class Scheduler:
         if not(self.jobs.has_key(job_name) or not(self.jobs.get(job_name))):
             raise Exception ('Job named "{}" can not be removed because it is not registered in scheduler'.format(job_name))
         getLogger(__name__).debug('Remove job "{}" from scheduler'.format(job_name))
-        self.scheduler.remove_job(self.jobs.get(job_name))
+        self.jobs.get(job_name).remove()
         if not keepJobEntry:
             self.jobs.pop(job_name)
         
@@ -92,6 +92,15 @@ class Scheduler:
             self.removeJob(job_name, True)
             self.jobs[job_name]=None
 
+    # Mostly for debug
+    def getNbScheduledJobs(self):
+        getLogger(__name__).debug('Nb tasks stored in scheduler: {} / Nb tasks in BackgroundScheduler: {}'.format(len(self.jobs),len(self.scheduler.get_jobs())))
+        return len(self.jobs)
+    # Mostly for debug
+    def print_jobs(self):
+        jobs = self.scheduler.get_jobs()
+        getLogger(__name__).debug('Jobs scheduled in BackgroundScheduler: {}'.format([j for j in jobs]))
+            
 
     def _getTrigger(self, policy):
         comp = re.compile("^([0-9]*)([smhd])?$")

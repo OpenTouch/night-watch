@@ -263,4 +263,6 @@ class TaskManager:
         getLogger(__name__).debug('Scheduling tasks...')
         for task in self.tasks.itervalues():
             self._scheduleTask(task)
-        getLogger(__name__).debug('Tasks scheduled')
+        # Mostly for debug
+        self._scheduler.print_jobs()
+        getLogger(__name__).debug('{} tasks has been added to scheduler'.format(self._scheduler.getNbScheduledJobs()))
